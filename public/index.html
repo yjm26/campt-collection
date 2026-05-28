@@ -52,8 +52,6 @@
       transform: translate(-50%, -50%);
     }
     .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
-    #pokeball-canvas { cursor: grab; }
-    #pokeball-canvas:active { cursor: grabbing; }
     .filter-active { background-color: #CC0000; color: white; }
   </style>
 </head>
@@ -103,9 +101,8 @@
       </div>
 
       <!-- 3D Pixel Pokéball -->
-      <div class="flex flex-col items-center justify-center">
+      <div class="flex flex-col items-center justify-center -ml-8">
         <canvas id="pokeball-canvas" width="400" height="400"></canvas>
-        <p class="text-xs text-gray-400 mt-4">🖱️ Drag to rotate</p>
       </div>
     </div>
   </section>
@@ -286,7 +283,6 @@
     let rotX = -0.3, rotY = 0.5;
     let isDragging = false;
     let lastMouse = { x: 0, y: 0 };
-    let autoRotate = true;
 
     function getPokeballColor(nx, ny, nz) {
       const bandWidth = 0.06;
@@ -298,8 +294,8 @@
         return { r: 26, g: 26, b: 26 };
       }
       if (ny < -bandWidth) {
-        const light = 0.4 + 0.6 * Math.max(0, -ny * 0.5 + nz * 0.5);
-        return { r: Math.round(204 * light), g: 0, b: 0 };
+        const light = 0.5 + 0.5 * Math.max(0, -ny * 0.5 + nz * 0.5);
+        return { r: Math.round(220 * light), g: Math.round(20 * light), b: Math.round(20 * light) };
       }
       if (ny > bandWidth) {
         const light = 0.5 + 0.5 * Math.max(0, ny * 0.3 + nz * 0.7);
@@ -348,15 +344,9 @@
       ctx.restore();
     }
 
-    canvas.addEventListener('mousedown', (e) => { isDragging = true; autoRotate = false; lastMouse = { x: e.clientX, y: e.clientY }; });
-    window.addEventListener('mousemove', (e) => { if (!isDragging) return; rotY += (e.clientX - lastMouse.x) * 0.01; rotX += (e.clientY - lastMouse.y) * 0.01; lastMouse = { x: e.clientX, y: e.clientY }; draw(); });
-    window.addEventListener('mouseup', () => { isDragging = false; });
-    canvas.addEventListener('touchstart', (e) => { isDragging = true; autoRotate = false; lastMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY }; });
-    window.addEventListener('touchmove', (e) => { if (!isDragging) return; rotY += (e.touches[0].clientX - lastMouse.x) * 0.01; rotX += (e.touches[0].clientY - lastMouse.y) * 0.01; lastMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY }; draw(); });
-    window.addEventListener('touchend', () => { isDragging = false; });
-
     function animate() {
-      if (autoRotate) { rotY += 0.008; draw(); }
+      rotY -= 0.005;
+      draw();
       requestAnimationFrame(animate);
     }
     draw();
