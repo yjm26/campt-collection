@@ -112,35 +112,19 @@
             Payment Method
           </h2>
           <div class="grid md:grid-cols-2 gap-3">
-            <label class="payment-option flex items-center gap-3 p-4 border-2 border-poke-line rounded-lg cursor-pointer hover:border-poke-red transition">
-              <input type="radio" name="payment" value="bca" checked class="accent-poke-red">
-              <div>
-                <p class="font-semibold text-sm">BCA Transfer</p>
-                <p class="text-xs text-gray-500">Manual verification</p>
-              </div>
-            </label>
-            <label class="payment-option flex items-center gap-3 p-4 border-2 border-poke-line rounded-lg cursor-pointer hover:border-poke-red transition">
-              <input type="radio" name="payment" value="mandiri" class="accent-poke-red">
-              <div>
-                <p class="font-semibold text-sm">Mandiri Transfer</p>
-                <p class="text-xs text-gray-500">Manual verification</p>
-              </div>
-            </label>
-            <label class="payment-option flex items-center gap-3 p-4 border-2 border-poke-line rounded-lg cursor-pointer hover:border-poke-red transition">
-              <input type="radio" name="payment" value="gopay" class="accent-poke-red">
-              <div>
-                <p class="font-semibold text-sm">GoPay</p>
-                <p class="text-xs text-gray-500">Instant payment</p>
-              </div>
-            </label>
-            <label class="payment-option flex items-center gap-3 p-4 border-2 border-poke-line rounded-lg cursor-pointer hover:border-poke-red transition">
-              <input type="radio" name="payment" value="ovo" class="accent-poke-red">
-              <div>
-                <p class="font-semibold text-sm">OVO</p>
-                <p class="text-xs text-gray-500">Instant payment</p>
-              </div>
-            </label>
+        <label class="flex items-center gap-4 p-4 border border-poke-line rounded-xl cursor-pointer hover:border-poke-red transition has-[:checked]:border-poke-red has-[:checked]:bg-red-50">
+          <input type="radio" name="payment" value="BCA Transfer" checked class="text-poke-red">
+          <div>
+            <span class="font-medium text-sm">BCA Transfer</span>
+            <p class="text-xs text-gray-500">Transfer ke BCA</p>
           </div>
+        </label>
+      </div>
+      <div class="bg-poke-gray rounded-xl p-4">
+        <p class="text-sm font-medium mb-1">Transfer exactly to:</p>
+        <p class="text-lg font-bold text-poke-black">5920308661</p>
+        <p class="text-sm text-gray-600">a/n Christopher Alexander</p>
+      </div>
         </div>
 
         <!-- Notes -->

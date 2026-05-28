@@ -211,7 +211,18 @@ app.post('/api/orders', (req, res) => {
     return sum + (parseInt(item.price.replace(/[^0-9]/g, '')) || 0);
   }, 0);
 
-  const orderId = 'ORD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase();
+  // Generate order ID: purchase#ddmmyyNN
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2, '0');
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const yy = String(now.getFullYear()).slice(-2);
+  const datePrefix = `purchase#${dd}${mm}${yy}`;
+
+  // Count orders today
+  const todayStart = `${now.getFullYear()}-${mm}-${dd} 00:00:00`;
+  const todayCount = db.prepare("SELECT COUNT(*) as count FROM orders WHERE created_at >= ?").get(todayStart).count;
+  const orderNum = String(todayCount + 1).padStart(2, '0');
+  const orderId = `${datePrefix}${orderNum}`;
 
   try {
     db.prepare(`
