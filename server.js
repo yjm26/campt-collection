@@ -14,7 +14,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'campt-collection-secret-key-2026';
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static('public', { maxAge: 0, etag: false }));
 app.use('/uploads', express.static('public/uploads'));
 
 // Multer config for image uploads
