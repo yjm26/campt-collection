@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel - Campt's Collection</title>
+  <title>Admin Dashboard - Campt's Collection</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
@@ -19,24 +20,12 @@
     }
   </script>
   <style>
-    .pokeball-sm {
-      width: 24px; height: 24px; border-radius: 50%;
-      background: linear-gradient(to bottom, #CC0000 50%, #fff 50%);
-      border: 2px solid #1a1a1a; position: relative; display: inline-block;
-    }
-    .pokeball-sm::before {
-      content: ''; position: absolute; top: 50%; left: 0; right: 0;
-      height: 2px; background: #1a1a1a; transform: translateY(-50%);
-    }
-    .pokeball-sm::after {
-      content: ''; position: absolute; top: 50%; left: 50%;
-      width: 6px; height: 6px; border-radius: 50%;
-      background: #fff; border: 2px solid #1a1a1a;
-      transform: translate(-50%, -50%);
-    }
-    .status-active { color: #16a34a; background: #dcfce7; }
-    .status-sold { color: #dc2626; background: #fee2e2; }
-    .status-inactive { color: #ca8a04; background: #fef9c3; }
+    .nav-active { background-color: #CC0000; color: white; }
+    .status-pending { color: #ca8a04; background: #fef9c3; }
+    .status-processing { color: #2563eb; background: #dbeafe; }
+    .status-completed { color: #16a34a; background: #dcfce7; }
+    .status-cancelled { color: #dc2626; background: #fee2e2; }
+    .card-hover:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
   </style>
 </head>
 <body class="font-sans bg-poke-gray text-poke-black min-h-screen">
@@ -45,8 +34,8 @@
   <nav class="bg-white border-b border-poke-line sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="pokeball-sm"></div>
-        <span class="font-bold text-lg">CAMPT'S <span class="text-poke-red">ADMIN</span></span>
+        <img src="/logo.jpg" alt="Logo" class="h-8 w-auto">
+        <span class="font-bold text-lg">ADMIN</span>
       </div>
       <div class="flex items-center gap-4">
         <a href="/" class="text-sm text-gray-500 hover:text-poke-red transition">← View Store</a>
@@ -58,85 +47,187 @@
 
   <div class="max-w-7xl mx-auto px-6 py-8">
 
-    <!-- Stats -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-      <div class="bg-white rounded-xl border border-poke-line p-5">
-        <p class="text-sm text-gray-500">Total Cards</p>
-        <p id="stat-total" class="text-2xl font-bold mt-1">0</p>
+    <!-- Tab Navigation -->
+    <div class="flex gap-2 mb-8 overflow-x-auto pb-2">
+      <button onclick="switchTab('dashboard')" id="tab-dashboard" class="nav-active px-5 py-2.5 rounded-lg text-sm font-semibold transition whitespace-nowrap">
+        Dashboard
+      </button>
+      <button onclick="switchTab('orders')" id="tab-orders" class="px-5 py-2.5 rounded-lg text-sm font-semibold text-gray-600 hover:bg-white transition whitespace-nowrap">
+        Orders
+      </button>
+      <button onclick="switchTab('cards')" id="tab-cards" class="px-5 py-2.5 rounded-lg text-sm font-semibold text-gray-600 hover:bg-white transition whitespace-nowrap">
+        Cards
+      </button>
+      <button onclick="switchTab('categories')" id="tab-categories" class="px-5 py-2.5 rounded-lg text-sm font-semibold text-gray-600 hover:bg-white transition whitespace-nowrap">
+        Categories
+      </button>
+    </div>
+
+    <!-- ========== DASHBOARD TAB ========== -->
+    <div id="content-dashboard">
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white rounded-xl border border-poke-line p-5 card-hover transition-all">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-sm text-gray-500">Revenue Today</p>
+            <span class="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">Today</span>
+          </div>
+          <p id="stat-revenue-today" class="text-2xl font-bold text-green-600">Rp0</p>
+        </div>
+        <div class="bg-white rounded-xl border border-poke-line p-5 card-hover transition-all">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-sm text-gray-500">Revenue This Month</p>
+            <span class="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">Monthly</span>
+          </div>
+          <p id="stat-revenue-month" class="text-2xl font-bold text-blue-600">Rp0</p>
+        </div>
+        <div class="bg-white rounded-xl border border-poke-line p-5 card-hover transition-all">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-sm text-gray-500">Orders Today</p>
+            <span class="text-xs text-poke-red bg-red-50 px-2 py-1 rounded-full">Today</span>
+          </div>
+          <p id="stat-orders-today" class="text-2xl font-bold">0</p>
+        </div>
+        <div class="bg-white rounded-xl border border-poke-line p-5 card-hover transition-all">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-sm text-gray-500">Total Orders</p>
+            <span class="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full">All Time</span>
+          </div>
+          <p id="stat-orders-total" class="text-2xl font-bold">0</p>
+        </div>
       </div>
-      <div class="bg-white rounded-xl border border-poke-line p-5">
-        <p class="text-sm text-gray-500">Active</p>
-        <p id="stat-active" class="text-2xl font-bold text-green-600 mt-1">0</p>
+
+      <!-- Charts Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Monthly Revenue Chart -->
+        <div class="bg-white rounded-xl border border-poke-line p-6">
+          <h3 class="font-bold text-lg mb-4">Monthly Revenue</h3>
+          <div class="h-64">
+            <canvas id="revenue-chart"></canvas>
+          </div>
+        </div>
+        <!-- Order Status Chart -->
+        <div class="bg-white rounded-xl border border-poke-line p-6">
+          <h3 class="font-bold text-lg mb-4">Order Status</h3>
+          <div class="h-64">
+            <canvas id="status-chart"></canvas>
+          </div>
+        </div>
       </div>
-      <div class="bg-white rounded-xl border border-poke-line p-5">
-        <p class="text-sm text-gray-500">Sold Out</p>
-        <p id="stat-sold" class="text-2xl font-bold text-poke-red mt-1">0</p>
+
+      <!-- Recent Orders -->
+      <div class="bg-white rounded-xl border border-poke-line overflow-hidden">
+        <div class="px-6 py-4 border-b border-poke-line flex items-center justify-between">
+          <h3 class="font-bold text-lg">Recent Orders</h3>
+          <button onclick="switchTab('orders')" class="text-sm text-poke-red hover:underline">View All</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-poke-gray border-b border-poke-line">
+              <tr>
+                <th class="text-left px-6 py-3 font-semibold text-gray-600">Order ID</th>
+                <th class="text-left px-6 py-3 font-semibold text-gray-600">Customer</th>
+                <th class="text-left px-6 py-3 font-semibold text-gray-600">Items</th>
+                <th class="text-left px-6 py-3 font-semibold text-gray-600">Total</th>
+                <th class="text-left px-6 py-3 font-semibold text-gray-600">Status</th>
+                <th class="text-left px-6 py-3 font-semibold text-gray-600">Date</th>
+              </tr>
+            </thead>
+            <tbody id="recent-orders-table">
+              <tr><td colspan="6" class="text-center py-8 text-gray-400">No orders yet</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <!-- Add Card Button -->
-    <div class="flex items-center justify-between mb-6">
-      <h2 class="text-xl font-bold">Manage Cards</h2>
-      <div class="flex gap-3">
-        <button onclick="openCategoryModal()" class="px-5 py-2 border border-poke-line text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-50 transition">
-          Categories
-        </button>
+    <!-- ========== ORDERS TAB ========== -->
+    <div id="content-orders" class="hidden">
+      <div class="bg-white rounded-xl border border-poke-line overflow-hidden">
+        <div class="px-6 py-4 border-b border-poke-line">
+          <h3 class="font-bold text-lg">All Orders</h3>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-poke-gray border-b border-poke-line">
+              <tr>
+                <th class="text-left px-6 py-3 font-semibold text-gray-600">Order ID</th>
+                <th class="text-left px-6 py-3 font-semibold text-gray-600">Customer</th>
+                <th class="text-left px-6 py-3 font-semibold text-gray-600">Contact</th>
+                <th class="text-left px-6 py-3 font-semibold text-gray-600">Items</th>
+                <th class="text-left px-6 py-3 font-semibold text-gray-600">Total</th>
+                <th class="text-left px-6 py-3 font-semibold text-gray-600">Status</th>
+                <th class="text-left px-6 py-3 font-semibold text-gray-600">Date</th>
+                <th class="text-left px-6 py-3 font-semibold text-gray-600">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="all-orders-table">
+              <tr><td colspan="8" class="text-center py-8 text-gray-400">No orders yet</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== CARDS TAB ========== -->
+    <div id="content-cards" class="hidden">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold">Manage Cards</h2>
         <button onclick="openModal()" class="px-5 py-2 bg-poke-red text-white text-sm font-semibold rounded-lg hover:bg-poke-darkred transition">
           + Add Card
         </button>
       </div>
-    </div>
-
-    <!-- Cards Table -->
-    <div class="bg-white rounded-xl border border-poke-line overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead class="bg-poke-gray border-b border-poke-line">
-            <tr>
-              <th class="text-left px-4 py-3 font-semibold text-gray-600">ID</th>
-              <th class="text-left px-4 py-3 font-semibold text-gray-600">Image</th>
-              <th class="text-left px-4 py-3 font-semibold text-gray-600">Name</th>
-              <th class="text-left px-4 py-3 font-semibold text-gray-600">Category</th>
-              <th class="text-left px-4 py-3 font-semibold text-gray-600">Price</th>
-              <th class="text-left px-4 py-3 font-semibold text-gray-600">Status</th>
-              <th class="text-left px-4 py-3 font-semibold text-gray-600">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="cards-table">
-            <!-- Cards loaded dynamically -->
-          </tbody>
-        </table>
-      </div>
-      <div id="empty-state" class="hidden py-12 text-center text-gray-400">
-        <p class="text-lg mb-2">No cards yet</p>
-        <p class="text-sm">Click "Add Card" to create one</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Category Modal -->
-  <div id="category-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl w-full max-w-md shadow-2xl">
-      <div class="flex items-center justify-between px-6 py-4 border-b border-poke-line">
-        <h3 class="font-bold text-lg">Manage Categories</h3>
-        <button onclick="closeCategoryModal()" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
-      </div>
-      <div class="p-6">
-        <div class="flex gap-2 mb-4">
-          <input type="text" id="new-category" placeholder="New category name"
-                 class="flex-1 px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
-          <button onclick="addCategory()" class="px-4 py-2 bg-poke-red text-white text-sm font-semibold rounded-lg hover:bg-poke-darkred transition">
-            Add
-          </button>
+      <div class="bg-white rounded-xl border border-poke-line overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-poke-gray border-b border-poke-line">
+              <tr>
+                <th class="text-left px-4 py-3 font-semibold text-gray-600">Image</th>
+                <th class="text-left px-4 py-3 font-semibold text-gray-600">Name</th>
+                <th class="text-left px-4 py-3 font-semibold text-gray-600">Category</th>
+                <th class="text-left px-4 py-3 font-semibold text-gray-600">Price</th>
+                <th class="text-left px-4 py-3 font-semibold text-gray-600">Qty</th>
+                <th class="text-left px-4 py-3 font-semibold text-gray-600">Status</th>
+                <th class="text-left px-4 py-3 font-semibold text-gray-600">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="cards-table">
+            </tbody>
+          </table>
         </div>
-        <div id="categories-list" class="space-y-2 max-h-60 overflow-y-auto">
-          <!-- Categories loaded dynamically -->
+        <div id="empty-state" class="hidden py-12 text-center text-gray-400">
+          <p class="text-lg mb-2">No cards yet</p>
+          <p class="text-sm">Click "Add Card" to create one</p>
         </div>
       </div>
     </div>
+
+    <!-- ========== CATEGORIES TAB ========== -->
+    <div id="content-categories" class="hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Add Category -->
+        <div class="bg-white rounded-xl border border-poke-line p-6">
+          <h3 class="font-bold text-lg mb-4">Add Category</h3>
+          <div class="flex gap-2">
+            <input type="text" id="new-category" placeholder="New category name"
+                   class="flex-1 px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+            <button onclick="addCategory()" class="px-5 py-2 bg-poke-red text-white text-sm font-semibold rounded-lg hover:bg-poke-darkred transition">
+              Add
+            </button>
+          </div>
+        </div>
+        <!-- Categories List -->
+        <div class="bg-white rounded-xl border border-poke-line p-6">
+          <h3 class="font-bold text-lg mb-4">All Categories</h3>
+          <div id="categories-list" class="space-y-2 max-h-96 overflow-y-auto">
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <!-- Modal (Add/Edit Card) -->
+  <!-- ========== CARD MODAL ========== -->
   <div id="modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-xl w-full max-w-4xl shadow-2xl overflow-hidden">
       <div class="flex items-center justify-between px-6 py-4 border-b border-poke-line">
@@ -146,7 +237,7 @@
       <form id="card-form">
         <input type="hidden" id="card-id">
         <div class="grid md:grid-cols-2">
-          <!-- Left: Image Upload with Drag & Drop -->
+          <!-- Left: Image Upload -->
           <div class="bg-poke-gray p-8 flex flex-col items-center justify-center min-h-[400px]">
             <div id="drop-zone" class="w-full h-full border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-poke-red transition p-8">
               <img id="card-image-preview" class="hidden w-full h-full object-contain rounded-lg">
@@ -186,16 +277,13 @@
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-xs text-gray-500 mb-1">Category *</label>
-                  <select id="card-category" required
-                          class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+                  <select id="card-category" required class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
                     <option value="">Select...</option>
-                    <!-- Categories loaded dynamically -->
                   </select>
                 </div>
                 <div>
                   <label class="block text-xs text-gray-500 mb-1">Quantity</label>
-                  <input type="number" id="card-quantity" min="0" value="1" placeholder="1"
-                         class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+                  <input type="number" id="card-quantity" min="0" value="1" class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-4">
@@ -238,13 +326,15 @@
     const API_BASE = window.location.origin;
     let token = localStorage.getItem('campt_token');
     let cards = [];
+    let orders = [];
+    let categories = [];
+    let revenueChart = null;
+    let statusChart = null;
 
     // Auth check
     if (!token) { window.location.href = '/login.html'; }
 
-    const headers = () => ({
-      'Authorization': `Bearer ${token}`,
-    });
+    const headers = () => ({ 'Authorization': `Bearer ${token}` });
 
     // Logout
     function logout() {
@@ -253,12 +343,337 @@
       window.location.href = '/login.html';
     }
 
-    // ========== CATEGORY MANAGEMENT ==========
-    let categories = [];
+    // Tab switching
+    function switchTab(tab) {
+      document.querySelectorAll('[id^="tab-"]').forEach(t => t.classList.remove('nav-active'));
+      document.querySelectorAll('[id^="content-"]').forEach(c => c.classList.add('hidden'));
+      document.getElementById(`tab-${tab}`).classList.add('nav-active');
+      document.getElementById(`content-${tab}`).classList.remove('hidden');
+    }
 
+    // ========== DASHBOARD STATS ==========
+    async function loadDashboard() {
+      try {
+        // Load orders
+        const ordersRes = await fetch(`${API_BASE}/api/admin/orders`, { headers: headers() });
+        orders = await ordersRes.json();
+
+        const now = new Date();
+        const today = now.toISOString().split('T')[0];
+        const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+        // Calculate stats
+        const todayOrders = orders.filter(o => o.created_at && o.created_at.startsWith(today));
+        const monthOrders = orders.filter(o => o.created_at && o.created_at.startsWith(thisMonth));
+
+        const revenueToday = todayOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+        const revenueMonth = monthOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+
+        document.getElementById('stat-revenue-today').textContent = `Rp${revenueToday.toLocaleString()}`;
+        document.getElementById('stat-revenue-month').textContent = `Rp${revenueMonth.toLocaleString()}`;
+        document.getElementById('stat-orders-today').textContent = todayOrders.length;
+        document.getElementById('stat-orders-total').textContent = orders.length;
+
+        // Render recent orders
+        renderRecentOrders(orders.slice(0, 5));
+
+        // Render charts
+        renderRevenueChart(orders);
+        renderStatusChart(orders);
+
+      } catch (err) {
+        console.error('Failed to load dashboard:', err);
+      }
+    }
+
+    function renderRecentOrders(ordersList) {
+      const tbody = document.getElementById('recent-orders-table');
+      if (ordersList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400">No orders yet</td></tr>';
+        return;
+      }
+      tbody.innerHTML = ordersList.map(o => `
+        <tr class="border-b border-poke-line hover:bg-poke-gray transition">
+          <td class="px-6 py-4 font-mono text-xs font-semibold">${o.order_id}</td>
+          <td class="px-6 py-4">${o.customer_name}</td>
+          <td class="px-6 py-4">${o.items.length} item(s)</td>
+          <td class="px-6 py-4 font-semibold">Rp${(o.total || 0).toLocaleString()}</td>
+          <td class="px-6 py-4"><span class="status-${o.status} px-2 py-1 rounded-full text-xs font-semibold">${o.status}</span></td>
+          <td class="px-6 py-4 text-gray-500 text-xs">${new Date(o.created_at).toLocaleDateString('id-ID')}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderRevenueChart(ordersList) {
+      const months = [];
+      const revenues = [];
+      const now = new Date();
+
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const monthName = d.toLocaleDateString('id-ID', { month: 'short', year: '2-digit' });
+        months.push(monthName);
+
+        const monthRevenue = ordersList
+          .filter(o => o.created_at && o.created_at.startsWith(monthKey))
+          .reduce((sum, o) => sum + (o.total || 0), 0);
+        revenues.push(monthRevenue);
+      }
+
+      if (revenueChart) revenueChart.destroy();
+      revenueChart = new Chart(document.getElementById('revenue-chart'), {
+        type: 'bar',
+        data: {
+          labels: months,
+          datasets: [{
+            label: 'Revenue (Rp)',
+            data: revenues,
+            backgroundColor: '#CC0000',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { callback: v => 'Rp' + (v/1000000).toFixed(0) + 'jt' } }
+          }
+        }
+      });
+    }
+
+    function renderStatusChart(ordersList) {
+      const statuses = ['pending', 'processing', 'completed', 'cancelled'];
+      const counts = statuses.map(s => ordersList.filter(o => o.status === s).length);
+      const colors = ['#ca8a04', '#2563eb', '#16a34a', '#dc2626'];
+
+      if (statusChart) statusChart.destroy();
+      statusChart = new Chart(document.getElementById('status-chart'), {
+        type: 'doughnut',
+        data: {
+          labels: statuses.map(s => s.charAt(0).toUpperCase() + s.slice(1)),
+          datasets: [{ data: counts, backgroundColor: colors }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom' } }
+        }
+      });
+    }
+
+    // ========== ORDERS ==========
+    async function loadOrders() {
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/orders`, { headers: headers() });
+        orders = await res.json();
+        renderAllOrders();
+      } catch (err) {
+        console.error('Failed to load orders:', err);
+      }
+    }
+
+    function renderAllOrders() {
+      const tbody = document.getElementById('all-orders-table');
+      if (orders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-gray-400">No orders yet</td></tr>';
+        return;
+      }
+      tbody.innerHTML = orders.map(o => `
+        <tr class="border-b border-poke-line hover:bg-poke-gray transition">
+          <td class="px-6 py-4 font-mono text-xs font-semibold">${o.order_id}</td>
+          <td class="px-6 py-4 font-medium">${o.customer_name}</td>
+          <td class="px-6 py-4 text-xs">
+            <div>${o.customer_email}</div>
+            <div class="text-gray-500">${o.customer_phone}</div>
+          </td>
+          <td class="px-6 py-4 text-xs">${o.items.map(i => i.name).join(', ')}</td>
+          <td class="px-6 py-4 font-semibold">Rp${(o.total || 0).toLocaleString()}</td>
+          <td class="px-6 py-4">
+            <select onchange="updateOrderStatus(${o.id}, this.value)" class="text-xs border border-poke-line rounded px-2 py-1 focus:outline-none">
+              <option value="pending" ${o.status==='pending'?'selected':''}>Pending</option>
+              <option value="processing" ${o.status==='processing'?'selected':''}>Processing</option>
+              <option value="completed" ${o.status==='completed'?'selected':''}>Completed</option>
+              <option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option>
+            </select>
+          </td>
+          <td class="px-6 py-4 text-gray-500 text-xs">${new Date(o.created_at).toLocaleDateString('id-ID')}</td>
+          <td class="px-6 py-4">
+            <button onclick="viewOrderDetails(${o.id})" class="text-xs text-poke-red hover:underline">Details</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function updateOrderStatus(orderId, status) {
+      try {
+        await fetch(`${API_BASE}/api/admin/orders/${orderId}/status`, {
+          method: 'PUT',
+          headers: { ...headers(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
+        loadDashboard();
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    function viewOrderDetails(orderId) {
+      const o = orders.find(o => o.id === orderId);
+      if (!o) return;
+      alert(`Order: ${o.order_id}\nCustomer: ${o.customer_name}\nEmail: ${o.customer_email}\nPhone: ${o.customer_phone}\nAddress: ${o.address}, ${o.city}, ${o.province} ${o.postal_code}\nItems: ${o.items.map(i => i.name).join(', ')}\nTotal: Rp${o.total.toLocaleString()}\nPayment: BCA Transfer\nStatus: ${o.status}`);
+    }
+
+    // ========== CARDS ==========
+    async function loadCards() {
+      try {
+        const res = await fetch(`${API_BASE}/api/cards?all=true`, { headers: headers() });
+        cards = await res.json();
+        renderCards();
+      } catch (err) {
+        console.error('Failed to load cards:', err);
+      }
+    }
+
+    function renderCards() {
+      const tbody = document.getElementById('cards-table');
+      const empty = document.getElementById('empty-state');
+
+      if (cards.length === 0) {
+        tbody.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      tbody.innerHTML = cards.map(c => `
+        <tr class="border-b border-poke-line hover:bg-poke-gray transition">
+          <td class="px-4 py-3">
+            ${c.image_url ? `<img src="${c.image_url}" class="w-12 h-12 object-cover rounded-lg">` : '<div class="w-12 h-12 bg-poke-gray rounded-lg flex items-center justify-center text-lg">🃏</div>'}
+          </td>
+          <td class="px-4 py-3 font-medium">${c.name}</td>
+          <td class="px-4 py-3 text-gray-500 text-xs">${c.category}</td>
+          <td class="px-4 py-3 font-semibold text-sm">${c.price}</td>
+          <td class="px-4 py-3 text-center">${c.quantity || 1}</td>
+          <td class="px-4 py-3"><span class="status-${c.status === 'active' ? 'completed' : c.status === 'sold' ? 'cancelled' : 'pending'} px-2 py-1 rounded-full text-xs font-semibold">${c.status}</span></td>
+          <td class="px-4 py-3">
+            <div class="flex gap-2">
+              <button onclick="editCard(${c.id})" class="text-xs text-blue-600 hover:underline">Edit</button>
+              <button onclick="deleteCard(${c.id})" class="text-xs text-red-600 hover:underline">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function openModal(card = null) {
+      document.getElementById('card-form').reset();
+      document.getElementById('card-id').value = '';
+      document.getElementById('card-image-preview').classList.add('hidden');
+      document.getElementById('drop-placeholder').classList.remove('hidden');
+      document.getElementById('modal-title').textContent = card ? 'Edit Card' : 'Add Card';
+      document.getElementById('card-submit-btn').textContent = card ? 'Update Card' : 'Save Card';
+
+      if (card) {
+        document.getElementById('card-id').value = card.id;
+        document.getElementById('card-name').value = card.name;
+        document.getElementById('card-category').value = card.category;
+        document.getElementById('card-price').value = card.price;
+        document.getElementById('card-set').value = card.set_name || '';
+        document.getElementById('card-status').value = card.status;
+        document.getElementById('card-grading').value = card.grading || '';
+        document.getElementById('card-quantity').value = card.quantity || 1;
+        document.getElementById('card-description').value = card.description || '';
+        if (card.image_url) {
+          document.getElementById('card-image-preview').src = card.image_url;
+          document.getElementById('card-image-preview').classList.remove('hidden');
+          document.getElementById('drop-placeholder').classList.add('hidden');
+        }
+      }
+
+      document.getElementById('modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.add('hidden');
+    }
+
+    function editCard(id) {
+      const card = cards.find(c => c.id === id);
+      if (card) openModal(card);
+    }
+
+    async function deleteCard(id) {
+      if (!confirm('Delete this card?')) return;
+      try {
+        await fetch(`${API_BASE}/api/admin/cards/${id}`, { method: 'DELETE', headers: headers() });
+        loadCards();
+        loadDashboard();
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    // Card form submit
+    document.getElementById('card-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('card-id').value;
+      const formData = new FormData();
+      formData.append('name', document.getElementById('card-name').value);
+      formData.append('category', document.getElementById('card-category').value);
+      formData.append('price', document.getElementById('card-price').value);
+      formData.append('set_name', document.getElementById('card-set').value);
+      formData.append('status', document.getElementById('card-status').value);
+      formData.append('grading', document.getElementById('card-grading').value);
+      formData.append('quantity', document.getElementById('card-quantity').value);
+      formData.append('description', document.getElementById('card-description').value);
+
+      const imageFile = document.getElementById('card-image').files[0];
+      if (imageFile) formData.append('image', imageFile);
+
+      try {
+        const url = id ? `${API_BASE}/api/admin/cards/${id}` : `${API_BASE}/api/admin/cards`;
+        const method = id ? 'PUT' : 'POST';
+        const res = await fetch(url, { method, headers: headers(), body: formData });
+        if (res.ok) {
+          closeModal();
+          loadCards();
+          loadDashboard();
+        } else {
+          const err = await res.json();
+          alert(err.error || 'Failed to save card');
+        }
+      } catch (err) { alert('Error: ' + err.message); }
+    });
+
+    // Drag & Drop
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('card-image');
+    const preview = document.getElementById('card-image-preview');
+    const placeholder = document.getElementById('drop-placeholder');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-poke-red', 'bg-white/50'); });
+    dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('border-poke-red', 'bg-white/50'); });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-poke-red', 'bg-white/50');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) { fileInput.files = e.dataTransfer.files; showPreview(file); }
+    });
+    fileInput.addEventListener('change', (e) => { if (e.target.files[0]) showPreview(e.target.files[0]); });
+    function showPreview(file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => { preview.src = ev.target.result; preview.classList.remove('hidden'); placeholder.classList.add('hidden'); };
+      reader.readAsDataURL(file);
+    }
+
+    // ========== CATEGORIES ==========
     async function loadCategories() {
       try {
-        const res = await fetch(`${API_BASE}/api/categories`);
+        const res = await fetch(`${API_BASE}/api/categories?all=true`, { headers: headers() });
         categories = await res.json();
         renderCategories();
         updateCategorySelect();
@@ -276,7 +691,7 @@
       list.innerHTML = categories.map(cat => `
         <div class="flex items-center justify-between p-3 bg-poke-gray rounded-lg">
           <span class="text-sm font-medium">${cat.name}</span>
-          <button onclick="deleteCategory(${cat.id})" class="text-gray-400 hover:text-red-500 text-sm">Delete</button>
+          <button onclick="deleteCategory(${cat.id})" class="text-gray-400 hover:text-red-500 text-xs">Delete</button>
         </div>
       `).join('');
     }
@@ -289,237 +704,35 @@
       if (currentVal) select.value = currentVal;
     }
 
-    function openCategoryModal() {
-      document.getElementById('category-modal').classList.remove('hidden');
-      loadCategories();
-    }
-
-    function closeCategoryModal() {
-      document.getElementById('category-modal').classList.add('hidden');
-    }
-
     async function addCategory() {
       const input = document.getElementById('new-category');
       const name = input.value.trim();
       if (!name) return;
-
       try {
         const res = await fetch(`${API_BASE}/api/admin/categories`, {
           method: 'POST',
           headers: { ...headers(), 'Content-Type': 'application/json' },
           body: JSON.stringify({ name })
         });
-        if (res.ok) {
-          input.value = '';
-          loadCategories();
-        } else {
-          const err = await res.json();
-          alert(err.error || 'Failed to add category');
-        }
-      } catch (err) {
-        alert('Error: ' + err.message);
-      }
+        if (res.ok) { input.value = ''; loadCategories(); }
+        else { const err = await res.json(); alert(err.error || 'Failed'); }
+      } catch (err) { alert('Error: ' + err.message); }
     }
 
     async function deleteCategory(id) {
       if (!confirm('Delete this category?')) return;
       try {
-        await fetch(`${API_BASE}/api/admin/categories/${id}`, {
-          method: 'DELETE',
-          headers: headers()
-        });
+        await fetch(`${API_BASE}/api/admin/categories/${id}`, { method: 'DELETE', headers: headers() });
         loadCategories();
-      } catch (err) {
-        alert('Error: ' + err.message);
-      }
-    }
-
-    // Load categories on init
-    loadCategories();
-
-    // Load stats
-    async function loadStats() {
-      try {
-        const res = await fetch(`${API_BASE}/api/admin/stats`, { headers: headers() });
-        if (res.status === 401 || res.status === 403) { logout(); return; }
-        const data = await res.json();
-        document.getElementById('stat-total').textContent = data.total;
-        document.getElementById('stat-active').textContent = data.active;
-        document.getElementById('stat-sold').textContent = data.sold;
-      } catch (err) { console.error('Stats error:', err); }
-    }
-
-    // Load cards
-    async function loadCards() {
-      try {
-        const res = await fetch(`${API_BASE}/api/cards`);
-        cards = await res.json();
-        renderCards();
-      } catch (err) { console.error('Cards error:', err); }
-    }
-
-    // Render cards table
-    function renderCards() {
-      const tbody = document.getElementById('cards-table');
-      const empty = document.getElementById('empty-state');
-
-      if (cards.length === 0) {
-        tbody.innerHTML = '';
-        empty.classList.remove('hidden');
-        return;
-      }
-
-      empty.classList.add('hidden');
-      tbody.innerHTML = cards.map(card => `
-        <tr class="border-b border-poke-line last:border-0 hover:bg-gray-50">
-          <td class="px-4 py-3 text-gray-400">#${card.id}</td>
-          <td class="px-4 py-3">
-            ${card.image_url
-              ? `<img src="${card.image_url}" class="w-12 h-12 object-cover rounded-lg border border-poke-line">`
-              : `<div class="w-12 h-12 bg-poke-gray rounded-lg flex items-center justify-center text-gray-300 text-xs">No img</div>`
-            }
-          </td>
-          <td class="px-4 py-3 font-medium">${card.name}</td>
-          <td class="px-4 py-3 text-gray-500">${card.category}</td>
-          <td class="px-4 py-3 font-medium">${card.price}</td>
-          <td class="px-4 py-3">
-            <span class="px-2 py-1 rounded-full text-xs font-semibold status-${card.status}">${card.status}</span>
-          </td>
-          <td class="px-4 py-3">
-            <div class="flex gap-2">
-              <button onclick="editCard(${card.id})" class="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition">Edit</button>
-              <button onclick="deleteCard(${card.id})" class="px-3 py-1 text-xs font-medium text-poke-red bg-red-50 rounded-lg hover:bg-red-100 transition">Delete</button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    // Open modal
-    function openModal(card = null) {
-      document.getElementById('modal').classList.remove('hidden');
-      document.getElementById('modal-title').textContent = card ? 'Edit Card' : 'Add Card';
-      document.getElementById('card-submit-btn').textContent = card ? 'Update Card' : 'Add Card';
-
-      if (card) {
-        document.getElementById('card-id').value = card.id;
-        document.getElementById('card-name').value = card.name;
-        document.getElementById('card-category').value = card.category;
-        document.getElementById('card-price').value = card.price;
-        document.getElementById('card-set').value = card.set_name || '';
-        document.getElementById('card-status').value = card.status;
-        if (card.image_url) {
-          const preview = document.getElementById('card-image-preview');
-          preview.src = card.image_url;
-          preview.classList.remove('hidden');
-        }
-      } else {
-        document.getElementById('card-id').value = '';
-        document.getElementById('card-form').reset();
-        document.getElementById('card-image-preview').classList.add('hidden');
-      }
-    }
-
-    function closeModal() {
-      document.getElementById('modal').classList.add('hidden');
-    }
-
-    // Edit card
-    function editCard(id) {
-      const card = cards.find(c => c.id === id);
-      if (card) openModal(card);
-    }
-
-    // Delete card
-    async function deleteCard(id) {
-      if (!confirm('Delete this card?')) return;
-      try {
-        const res = await fetch(`${API_BASE}/api/admin/cards/${id}`, {
-          method: 'DELETE',
-          headers: headers()
-        });
-        if (res.ok) { loadCards(); loadStats(); }
-        else alert('Failed to delete card');
       } catch (err) { alert('Error: ' + err.message); }
     }
 
-    // Submit form (add/edit)
-    document.getElementById('card-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const id = document.getElementById('card-id').value;
-      const formData = new FormData();
-      formData.append('name', document.getElementById('card-name').value);
-      formData.append('category', document.getElementById('card-category').value);
-      formData.append('price', document.getElementById('card-price').value);
-      formData.append('set_name', document.getElementById('card-set').value);
-      formData.append('status', document.getElementById('card-status').value);
-
-      const imageFile = document.getElementById('card-image').files[0];
-      if (imageFile) formData.append('image', imageFile);
-
-      try {
-        const url = id ? `${API_BASE}/api/admin/cards/${id}` : `${API_BASE}/api/admin/cards`;
-        const method = id ? 'PUT' : 'POST';
-        const res = await fetch(url, { method, headers: headers(), body: formData });
-
-        if (res.ok) {
-          closeModal();
-          loadCards();
-          loadStats();
-        } else {
-          const err = await res.json();
-          alert(err.error || 'Failed to save card');
-        }
-      } catch (err) { alert('Error: ' + err.message); }
-    });
-
-    // Image preview with Drag & Drop
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('card-image');
-    const preview = document.getElementById('card-image-preview');
-    const placeholder = document.getElementById('drop-placeholder');
-
-    dropZone.addEventListener('click', () => fileInput.click());
-
-    dropZone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      dropZone.classList.add('border-poke-red', 'bg-white/50');
-    });
-
-    dropZone.addEventListener('dragleave', () => {
-      dropZone.classList.remove('border-poke-red', 'bg-white/50');
-    });
-
-    dropZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      dropZone.classList.remove('border-poke-red', 'bg-white/50');
-      const file = e.dataTransfer.files[0];
-      if (file && file.type.startsWith('image/')) {
-        fileInput.files = e.dataTransfer.files;
-        showPreview(file);
-      }
-    });
-
-    fileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) showPreview(file);
-    });
-
-    function showPreview(file) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        preview.src = ev.target.result;
-        preview.classList.remove('hidden');
-        placeholder.classList.add('hidden');
-      };
-      reader.readAsDataURL(file);
-    }
-
-    // Init
+    // ========== INIT ==========
     const user = JSON.parse(localStorage.getItem('campt_user') || '{}');
     document.getElementById('admin-name').textContent = user.username || 'Admin';
-    loadStats();
+    loadCategories();
     loadCards();
+    loadDashboard();
   </script>
 </body>
 </html>
