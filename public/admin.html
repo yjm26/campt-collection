@@ -147,8 +147,11 @@
     <!-- ========== ORDERS TAB ========== -->
     <div id="content-orders" class="hidden">
       <div class="bg-white rounded-xl border border-poke-line overflow-hidden">
-        <div class="px-6 py-4 border-b border-poke-line">
+        <div class="px-6 py-4 border-b border-poke-line flex items-center justify-between">
           <h3 class="font-bold text-lg">All Orders</h3>
+          <button onclick="clearAllOrders()" class="text-xs bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition font-semibold">
+            Clear All Orders
+          </button>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
@@ -518,6 +521,7 @@
             <div class="flex gap-2">
               ${o.status === 'pending' ? `<button onclick="confirmPayment(${o.id})" class="text-xs bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition">Confirm</button>` : ''}
               <button onclick="viewOrderDetails(${o.id})" class="text-xs text-poke-red hover:underline">Details</button>
+              <button onclick="deleteOrder(${o.id})" class="text-xs text-red-500 hover:text-red-700 hover:underline">Delete</button>
             </div>
           </td>
         </tr>
@@ -529,6 +533,37 @@
       await updateOrderStatus(orderId, 'processing');
       loadOrders();
       loadDashboard();
+    }
+
+    async function deleteOrder(orderId) {
+      if (!confirm('Delete this order?')) return;
+      try {
+        await fetch(`${API_BASE}/api/admin/orders/${orderId}`, {
+          method: 'DELETE',
+          headers: headers()
+        });
+        showToast('Order deleted', 'success');
+        loadOrders();
+        loadDashboard();
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+      }
+    }
+
+    async function clearAllOrders() {
+      if (!confirm('DELETE ALL ORDERS? This cannot be undone!')) return;
+      if (!confirm('Are you really sure? All order history will be gone.')) return;
+      try {
+        await fetch(`${API_BASE}/api/admin/orders`, {
+          method: 'DELETE',
+          headers: headers()
+        });
+        showToast('All orders cleared', 'success');
+        loadOrders();
+        loadDashboard();
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+      }
     }
 
     async function updateOrderStatus(orderId, status) {

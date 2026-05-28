@@ -248,6 +248,18 @@ app.put('/api/admin/orders/:id/status', authenticateToken, (req, res) => {
   res.json({ message: 'Order status updated' });
 });
 
+// Delete single order
+app.delete('/api/admin/orders/:id', authenticateToken, (req, res) => {
+  db.prepare('DELETE FROM orders WHERE id = ?').run(req.params.id);
+  res.json({ message: 'Order deleted' });
+});
+
+// Clear all orders
+app.delete('/api/admin/orders', authenticateToken, (req, res) => {
+  db.prepare('DELETE FROM orders').run();
+  res.json({ message: 'All orders cleared' });
+});
+
 // ========== CARD ROUTES (PUBLIC) ==========
 app.get('/api/cards', (req, res) => {
   const { category, status } = req.query;
