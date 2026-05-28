@@ -86,7 +86,9 @@
       </div>
       <div class="flex items-center gap-4">
         <button id="cart-btn" class="relative text-sm text-gray-500 hover:text-poke-red transition">
-          🛒 Cart (<span id="cart-count">0</span>)
+          <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
+          </svg>Cart (<span id="cart-count">0</span>)
         </button>
         <a href="/login.html" id="nav-login" class="px-4 py-2 bg-poke-red text-white text-sm font-semibold rounded-lg hover:bg-poke-darkred transition">Login</a>
         <div id="nav-avatar" class="hidden flex items-center gap-2">
@@ -128,7 +130,13 @@
         <!-- Left: Card Image -->
         <div class="bg-[#f5f5f5] flex items-center justify-center overflow-hidden p-8" style="aspect-ratio: 3/4;">
           <img id="preview-image" src="" alt="" class="w-full h-full object-contain hidden rounded-lg">
-          <span id="preview-emoji" class="text-9xl text-gray-300">🃏</span>
+          <div id="preview-placeholder" class="flex items-center justify-center">
+            <svg class="w-24 h-24 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <rect x="3" y="3" width="18" height="18" rx="2" stroke-width="1.5"/>
+              <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+              <path d="M21 15l-5-5L5 21" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
         </div>
         <!-- Right: Description -->
         <div class="p-8 flex flex-col justify-between">
@@ -294,11 +302,10 @@
       if (card.image_url) {
         document.getElementById('preview-image').src = card.image_url;
         document.getElementById('preview-image').classList.remove('hidden');
-        document.getElementById('preview-emoji').classList.add('hidden');
+        document.getElementById('preview-placeholder').classList.add('hidden');
       } else {
         document.getElementById('preview-image').classList.add('hidden');
-        document.getElementById('preview-emoji').textContent = getEmoji(card.category);
-        document.getElementById('preview-emoji').classList.remove('hidden');
+        document.getElementById('preview-placeholder').classList.remove('hidden');
       }
 
       // Animate in
@@ -432,15 +439,19 @@
       }, 2500);
     }
 
-    // Emoji map for card categories
-    const emojiMap = {
-      'Holo / Reverse': '✨', 'EX / GX': '💎', 'V / VSTAR / VMAX': '⚡',
-      'Vintage / Modern': '📜', 'AR / CHR / SAR': '🎨', 'SR': '🌟',
-      'Slab': '🏆', 'Promo': '🎁', 'Booster Box': '📦', 'Legendary': '🌈',
-      'default': '🃏'
-    };
+    // SVG card placeholder for cards without images
+    function getCardPlaceholder() {
+      return `<svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="18" rx="2" stroke-width="1.5"/>
+        <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+        <path d="M21 15l-5-5L5 21" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`;
+    }
 
-    function getEmoji(category) { return emojiMap[category] || emojiMap['default']; }
+    // Cart SVG icon
+    const cartIcon = `<svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
+    </svg>`;
 
     // Load categories for filters
     async function loadCategories() {
@@ -512,7 +523,7 @@
           <div class="aspect-[3/4] bg-[#f5f5f5] relative overflow-hidden group">
             ${card.image_url
               ? `<img src="${card.image_url}" alt="${card.name}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]">`
-              : `<div class="w-full h-full flex items-center justify-center text-5xl text-gray-300">${getEmoji(card.category)}</div>`
+              : `<div class="w-full h-full flex items-center justify-center">${getCardPlaceholder()}</div>`
             }
             ${card.grading ? `<div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded text-[11px] font-semibold text-gray-800 tracking-wide">${card.grading}</div>` : ''}
             ${card.status === 'sold' ? `<div class="absolute inset-0 bg-black/40 flex items-center justify-center"><span class="bg-white px-5 py-2 text-sm font-semibold tracking-wider uppercase">Sold</span></div>` : ''}
@@ -527,7 +538,7 @@
             <p class="text-sm font-medium text-gray-600 mb-3">${card.price}</p>
             ${card.status === 'sold'
               ? ''
-              : `<button onclick='openPreview(${JSON.stringify(card).replace(/'/g, "'")})' class="w-full py-2.5 bg-[#111] text-white text-xs font-semibold rounded-md hover:bg-[#333] transition-colors duration-200 tracking-wide uppercase">View Details</button>`
+              : `<button data-card-id="${card.id}" class="view-details-btn w-full py-2.5 bg-[#111] text-white text-xs font-semibold rounded-md hover:bg-[#333] transition-colors duration-200 tracking-wide uppercase">View Details</button>`
             }
           </div>
         </div>
@@ -595,6 +606,15 @@
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('filter-active'));
       btn.classList.add('filter-active');
       renderCards(allCards);
+    });
+
+    // View Details buttons (event delegation on grid)
+    document.getElementById('cards-grid').addEventListener('click', (e) => {
+      const btn = e.target.closest('.view-details-btn');
+      if (!btn) return;
+      const cardId = parseInt(btn.dataset.cardId);
+      const card = allCards.find(c => c.id === cardId);
+      if (card) openPreview(card);
     });
 
     // Search
