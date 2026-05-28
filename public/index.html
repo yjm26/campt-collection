@@ -91,6 +91,11 @@
           </svg>Cart (<span id="cart-count">0</span>)
         </button>
         <a href="/login.html" id="nav-login" class="px-4 py-2 bg-poke-red text-white text-sm font-semibold rounded-lg hover:bg-poke-darkred transition">Login</a>
+        <div id="nav-avatar" class="hidden flex items-center gap-3">
+          <a href="/admin.html" id="nav-dashboard" class="text-xs text-gray-400 hover:text-poke-red transition">Dashboard</a>
+          <div class="w-8 h-8 rounded-full bg-poke-gray flex items-center justify-center text-sm font-semibold cursor-pointer hover:bg-gray-200 transition" onclick="window.location.href='/admin.html'" title="Admin">A</div>
+          <button id="logout-btn" class="text-xs text-gray-400 hover:text-poke-red transition">Logout</button>
+        </div>
       </div>
     </div>
   </nav>
@@ -337,6 +342,23 @@
       div.textContent = String(str);
       return div.innerHTML;
     }
+
+    // Check if admin is logged in
+    function checkAdminAuth() {
+      const token = localStorage.getItem('campt_token');
+      if (token) {
+        document.getElementById('nav-login').classList.add('hidden');
+        document.getElementById('nav-avatar').classList.remove('hidden');
+        document.getElementById('nav-dashboard').classList.remove('hidden');
+      }
+    }
+    checkAdminAuth();
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      localStorage.removeItem('campt_token');
+      window.location.reload();
+    });
 
     // Cart
     let cart = JSON.parse(localStorage.getItem('campt_cart') || '[]');
