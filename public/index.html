@@ -425,7 +425,7 @@
     // Load categories for filters
     async function loadCategories() {
       try {
-        const res = await fetch(`${API_BASE}/api/categories`);
+        const res = await fetch(`${API_BASE}/api/categories?all=true`);
         const categories = await res.json();
         const filtersDiv = document.getElementById('filters');
         categories.forEach(cat => {
