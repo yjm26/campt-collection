@@ -181,7 +181,7 @@
 
     // Check if admin is logged in
     function checkAdminAuth() {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('campt_token');
       if (token) {
         document.getElementById('nav-login').classList.add('hidden');
         document.getElementById('nav-avatar').classList.remove('hidden');
