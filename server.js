@@ -45,6 +45,9 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     category TEXT NOT NULL,
+    grading TEXT,
+    quantity INTEGER DEFAULT 1,
+    description TEXT,
     price TEXT NOT NULL,
     image_url TEXT,
     set_name TEXT,
@@ -53,7 +56,22 @@ db.exec(`
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+
+  CREATE TABLE IF NOT EXISTS categories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `);
+
+// Seed default categories if empty
+const catCount = db.prepare('SELECT COUNT(*) as count FROM categories').get();
+if (catCount.count === 0) {
+  const defaultCats = ['Holo / Reverse', 'EX / GX', 'V / VSTAR / VMAX', 'Vintage / Modern', 'AR / CHR / SAR', 'SR', 'Slab', 'Promo', 'Booster Box', 'Legendary'];
+  const insertCat = db.prepare('INSERT OR IGNORE INTO categories (name) VALUES (?)');
+  defaultCats.forEach(c => insertCat.run(c));
+  console.log('✅ Default categories seeded');
+}
 
 // Seed default admin if not exists
 const adminExists = db.prepare('SELECT id FROM users WHERE username = ?').get('admin');
@@ -110,6 +128,44 @@ app.post('/api/auth/login', (req, res) => {
 app.get('/api/auth/me', authenticateToken, (req, res) => {
   const user = db.prepare('SELECT id, username, role FROM users WHERE id = ?').get(req.user.id);
   res.json(user);
+});
+
+// ========== CATEGORY ROUTES ==========
+app.get('/api/categories', (req, res) => {
+  const categories = db.prepare('SELECT * FROM categories ORDER BY name').all();
+  res.json(categories);
+});
+
+app.post('/api/admin/categories', authenticateToken, (req, res) => {
+  const { name } = req.body;
+  if (!name) return res.status(400).json({ error: 'Category name required' });
+  
+  try {
+    const result = db.prepare('INSERT INTO categories (name) VALUES (?)').run(name);
+    const category = db.prepare('SELECT * FROM categories WHERE id = ?').get(result.lastInsertRowid);
+    res.json(category);
+  } catch (err) {
+    if (err.message.includes('UNIQUE')) return res.status(400).json({ error: 'Category already exists' });
+    throw err;
+  }
+});
+
+app.put('/api/admin/categories/:id', authenticateToken, (req, res) => {
+  const { name } = req.body;
+  const existing = db.prepare('SELECT * FROM categories WHERE id = ?').get(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'Category not found' });
+  
+  db.prepare('UPDATE categories SET name = ? WHERE id = ?').run(name || existing.name, req.params.id);
+  const category = db.prepare('SELECT * FROM categories WHERE id = ?').get(req.params.id);
+  res.json(category);
+});
+
+app.delete('/api/admin/categories/:id', authenticateToken, (req, res) => {
+  const existing = db.prepare('SELECT * FROM categories WHERE id = ?').get(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'Category not found' });
+  
+  db.prepare('DELETE FROM categories WHERE id = ?').run(req.params.id);
+  res.json({ message: 'Category deleted' });
 });
 
 // ========== CARD ROUTES (PUBLIC) ==========

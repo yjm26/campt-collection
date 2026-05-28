@@ -169,15 +169,6 @@
     <!-- Filters -->
     <div id="filters" class="flex gap-2 overflow-x-auto pb-4 mb-8 border-b border-poke-line">
       <button data-category="" class="filter-btn px-4 py-2 bg-poke-red text-white text-sm font-medium rounded-full whitespace-nowrap transition">All Drops</button>
-      <button data-category="Holo / Reverse" class="filter-btn px-4 py-2 text-gray-600 text-sm font-medium hover:text-poke-red whitespace-nowrap transition">Holo / Reverse</button>
-      <button data-category="EX / GX" class="filter-btn px-4 py-2 text-gray-600 text-sm font-medium hover:text-poke-red whitespace-nowrap transition">EX / GX</button>
-      <button data-category="V / VSTAR / VMAX" class="filter-btn px-4 py-2 text-gray-600 text-sm font-medium hover:text-poke-red whitespace-nowrap transition">V / VSTAR / VMAX</button>
-      <button data-category="Vintage / Modern" class="filter-btn px-4 py-2 text-gray-600 text-sm font-medium hover:text-poke-red whitespace-nowrap transition">Vintage / Modern</button>
-      <button data-category="AR / CHR / SAR" class="filter-btn px-4 py-2 text-gray-600 text-sm font-medium hover:text-poke-red whitespace-nowrap transition">AR / CHR / SAR</button>
-      <button data-category="SR" class="filter-btn px-4 py-2 text-gray-600 text-sm font-medium hover:text-poke-red whitespace-nowrap transition">SR</button>
-      <button data-category="Slab" class="filter-btn px-4 py-2 text-gray-600 text-sm font-medium hover:text-poke-red whitespace-nowrap transition">Slab</button>
-      <button data-category="Promo" class="filter-btn px-4 py-2 text-gray-600 text-sm font-medium hover:text-poke-red whitespace-nowrap transition">Promo</button>
-      <button data-category="Booster Box" class="filter-btn px-4 py-2 text-gray-600 text-sm font-medium hover:text-poke-red whitespace-nowrap transition">Booster Box</button>
     </div>
 
     <!-- Cards Grid -->
@@ -367,6 +358,24 @@
 
     function getEmoji(category) { return emojiMap[category] || emojiMap['default']; }
 
+    // Load categories for filters
+    async function loadCategories() {
+      try {
+        const res = await fetch(`${API_BASE}/api/categories`);
+        const categories = await res.json();
+        const filtersDiv = document.getElementById('filters');
+        categories.forEach(cat => {
+          const btn = document.createElement('button');
+          btn.dataset.category = cat.name;
+          btn.className = 'filter-btn px-4 py-2 text-gray-600 text-sm font-medium hover:text-poke-red whitespace-nowrap transition';
+          btn.textContent = cat.name;
+          filtersDiv.appendChild(btn);
+        });
+      } catch (err) {
+        console.error('Failed to load categories:', err);
+      }
+    }
+
     // Load cards from API
     async function loadCards() {
       try {
@@ -540,6 +549,7 @@
     animate();
 
     // Init
+    loadCategories();
     loadCards();
   </script>
 </body>
