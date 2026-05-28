@@ -21,6 +21,16 @@
 </head>
 <body class="font-sans bg-poke-gray text-poke-black min-h-screen">
 
+  <!-- Toast Container -->
+  <div id="toast-container" class="fixed top-6 right-6 z-[100] flex flex-col gap-3"></div>
+
+  <style>
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+    .toast-enter { animation: slideIn 0.3s ease-out; }
+    .toast-exit { animation: slideOut 0.3s ease-in; }
+  </style>
+
   <!-- Navbar -->
   <nav class="bg-white border-b border-poke-line sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -198,6 +208,22 @@
 
   <script>
     const API_BASE = window.location.origin;
+
+    // Toast notification
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const icons = {
+        success: `<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`,
+        error: `<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`,
+        info: `<svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`
+      };
+      const borderColors = { success: 'border-l-4 border-green-500', error: 'border-l-4 border-red-500', info: 'border-l-4 border-blue-500' };
+      toast.className = `toast-enter flex items-center gap-3 bg-white px-5 py-4 rounded-lg shadow-xl ${borderColors[type]} min-w-[300px] max-w-[400px]`;
+      toast.innerHTML = `${icons[type]}<span class="text-sm font-medium text-gray-800">${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => { toast.classList.remove('toast-enter'); toast.classList.add('toast-exit'); setTimeout(() => toast.remove(), 300); }, 2500);
+    }
     let cart = JSON.parse(localStorage.getItem('campt_cart') || '[]');
 
     // Redirect if cart is empty
@@ -247,7 +273,7 @@
       const ig = document.getElementById('cust-ig').value.trim();
 
       if (!name || !email || !phone || !address || !city || !province || !postal) {
-        alert('Please fill in all required fields');
+        showToast('Please fill in all required fields', 'error');
         return;
       }
 
@@ -274,12 +300,12 @@
           document.getElementById('success-modal').classList.remove('hidden');
           localStorage.removeItem('campt_cart');
         } else {
-          alert(data.error || 'Failed to place order');
+          showToast(data.error || 'Failed to place order', 'error');
           btn.disabled = false;
           btn.textContent = 'Place Order';
         }
       } catch (err) {
-        alert('Error: ' + err.message);
+        showToast('Error: ' + err.message, 'error');
         btn.disabled = false;
         btn.textContent = 'Place Order';
       }

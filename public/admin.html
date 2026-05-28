@@ -30,6 +30,9 @@
 </head>
 <body class="font-sans bg-poke-gray text-poke-black min-h-screen">
 
+  <!-- Toast Container -->
+  <div id="toast-container" class="fixed top-20 right-6 z-[100] flex flex-col gap-3"></div>
+
   <!-- Navbar -->
   <nav class="bg-white border-b border-poke-line sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -324,6 +327,22 @@
 
   <script>
     const API_BASE = window.location.origin;
+
+    // Toast notification
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const icons = {
+        success: `<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`,
+        error: `<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`,
+        info: `<svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`
+      };
+      const borderColors = { success: 'border-l-4 border-green-500', error: 'border-l-4 border-red-500', info: 'border-l-4 border-blue-500' };
+      toast.className = `toast-enter flex items-center gap-3 bg-white px-5 py-4 rounded-lg shadow-xl ${borderColors[type]} min-w-[300px] max-w-[400px]`;
+      toast.innerHTML = `${icons[type]}<span class="text-sm font-medium text-gray-800">${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => { toast.classList.remove('toast-enter'); toast.classList.add('toast-exit'); setTimeout(() => toast.remove(), 300); }, 2500);
+    }
     let token = localStorage.getItem('campt_token');
     let cards = [];
     let orders = [];
@@ -521,14 +540,41 @@
         });
         loadDashboard();
       } catch (err) {
-        alert('Error: ' + err.message);
+        showToast('Error: ' + err.message, 'error');
       }
     }
 
     function viewOrderDetails(orderId) {
       const o = orders.find(o => o.id === orderId);
       if (!o) return;
-      alert(`Order: ${o.order_id}\nCustomer: ${o.customer_name}\nEmail: ${o.customer_email}\nPhone: ${o.customer_phone}\nAddress: ${o.address}, ${o.city}, ${o.province} ${o.postal_code}\nItems: ${o.items.map(i => i.name).join(', ')}\nTotal: Rp${o.total.toLocaleString()}\nPayment: BCA Transfer\nStatus: ${o.status}`);
+      // Show order details in a nice format
+      const detailsHtml = `
+        <div class="space-y-2">
+          <p><strong>Order:</strong> ${o.order_id}</p>
+          <p><strong>Customer:</strong> ${o.customer_name}</p>
+          <p><strong>Email:</strong> ${o.customer_email}</p>
+          <p><strong>Phone:</strong> ${o.customer_phone}</p>
+          <p><strong>Address:</strong> ${o.address}, ${o.city}, ${o.province} ${o.postal_code}</p>
+          <p><strong>Items:</strong> ${o.items.map(i => i.name).join(', ')}</p>
+          <p><strong>Total:</strong> Rp${o.total.toLocaleString()}</p>
+          <p><strong>Payment:</strong> BCA Transfer</p>
+          <p><strong>Status:</strong> ${o.status}</p>
+        </div>
+      `;
+      // Create a temporary modal to show details
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4';
+      modal.innerHTML = `
+        <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-lg">Order Details</h3>
+            <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+          </div>
+          ${detailsHtml}
+          <button onclick="this.closest('.fixed').remove()" class="mt-4 w-full py-2 bg-poke-red text-white rounded-lg hover:bg-poke-darkred transition text-sm">Close</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
     }
 
     // ========== CARDS ==========
@@ -617,7 +663,7 @@
         loadCards();
         loadDashboard();
       } catch (err) {
-        alert('Error: ' + err.message);
+        showToast('Error: ' + err.message, 'error');
       }
     }
 
@@ -648,9 +694,9 @@
           loadDashboard();
         } else {
           const err = await res.json();
-          alert(err.error || 'Failed to save card');
+          showToast(err.error || 'Failed to save card', 'error');
         }
-      } catch (err) { alert('Error: ' + err.message); }
+      } catch (err) { showToast('Error: ' + err.message, 'error'); }
     });
 
     // Drag & Drop
@@ -720,8 +766,8 @@
           body: JSON.stringify({ name })
         });
         if (res.ok) { input.value = ''; loadCategories(); }
-        else { const err = await res.json(); alert(err.error || 'Failed'); }
-      } catch (err) { alert('Error: ' + err.message); }
+        else { const err = await res.json(); showToast(err.error || 'Failed', 'error'); }
+      } catch (err) { showToast('Error: ' + err.message, 'error'); }
     }
 
     async function deleteCategory(id) {
@@ -729,7 +775,7 @@
       try {
         await fetch(`${API_BASE}/api/admin/categories/${id}`, { method: 'DELETE', headers: headers() });
         loadCategories();
-      } catch (err) { alert('Error: ' + err.message); }
+      } catch (err) { showToast('Error: ' + err.message, 'error'); }
     }
 
     // ========== INIT ==========
