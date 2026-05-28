@@ -331,6 +331,14 @@
   <script>
     const API_BASE = window.location.origin;
 
+    // XSS protection: escape HTML entities
+    function esc(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = String(str);
+      return div.innerHTML;
+    }
+
     // Toast notification
     function showToast(message, type = 'info') {
       const container = document.getElementById('toast-container');
@@ -342,7 +350,7 @@
       };
       const borderColors = { success: 'border-l-4 border-green-500', error: 'border-l-4 border-red-500', info: 'border-l-4 border-blue-500' };
       toast.className = `toast-enter flex items-center gap-3 bg-white px-5 py-4 rounded-lg shadow-xl ${borderColors[type]} min-w-[300px] max-w-[400px]`;
-      toast.innerHTML = `${icons[type]}<span class="text-sm font-medium text-gray-800">${message}</span>`;
+      toast.innerHTML = `${icons[type]}<span class="text-sm font-medium text-gray-800">${esc(message)}</span>`;
       container.appendChild(toast);
       setTimeout(() => { toast.classList.remove('toast-enter'); toast.classList.add('toast-exit'); setTimeout(() => toast.remove(), 300); }, 2500);
     }
@@ -416,11 +424,11 @@
       }
       tbody.innerHTML = ordersList.map(o => `
         <tr class="border-b border-poke-line hover:bg-poke-gray transition">
-          <td class="px-6 py-4 font-mono text-xs font-semibold">${o.order_id}</td>
-          <td class="px-6 py-4">${o.customer_name}</td>
-          <td class="px-6 py-4">${o.items.length} item(s)</td>
+          <td class="px-6 py-4 font-mono text-xs font-semibold">${esc(o.order_id)}</td>
+          <td class="px-6 py-4">${esc(o.customer_name)}</td>
+          <td class="px-6 py-4">${esc(o.items).length} item(s)</td>
           <td class="px-6 py-4 font-semibold">Rp${(o.total || 0).toLocaleString()}</td>
-          <td class="px-6 py-4"><span class="status-${o.status} px-2 py-1 rounded-full text-xs font-semibold">${o.status}</span></td>
+          <td class="px-6 py-4"><span class="status-${esc(o.status)} px-2 py-1 rounded-full text-xs font-semibold">${esc(o.status)}</span></td>
           <td class="px-6 py-4 text-gray-500 text-xs">${new Date(o.created_at).toLocaleDateString('id-ID')}</td>
         </tr>
       `).join('');
@@ -505,16 +513,16 @@
       }
       tbody.innerHTML = orders.map(o => `
         <tr class="border-b border-poke-line hover:bg-poke-gray transition">
-          <td class="px-6 py-4 font-mono text-xs font-semibold">${o.order_id}</td>
-          <td class="px-6 py-4 font-medium">${o.customer_name}</td>
+          <td class="px-6 py-4 font-mono text-xs font-semibold">${esc(o.order_id)}</td>
+          <td class="px-6 py-4 font-medium">${esc(o.customer_name)}</td>
           <td class="px-6 py-4 text-xs">
-            <div>${o.customer_email}</div>
-            <div class="text-gray-500">${o.customer_phone}</div>
+            <div>${esc(o.customer_email)}</div>
+            <div class="text-gray-500">${esc(o.customer_phone)}</div>
           </td>
-          <td class="px-6 py-4 text-xs">${o.items.map(i => i.name).join(', ')}</td>
+          <td class="px-6 py-4 text-xs">${o.items.map(i => esc(i.name)).join(', ')}</td>
           <td class="px-6 py-4 font-semibold">Rp${(o.total || 0).toLocaleString()}</td>
           <td class="px-6 py-4">
-            <span class="status-${o.status} px-2 py-1 rounded-full text-xs font-semibold">${o.status}</span>
+            <span class="status-${esc(o.status)} px-2 py-1 rounded-full text-xs font-semibold">${esc(o.status)}</span>
           </td>
           <td class="px-6 py-4 text-gray-500 text-xs">${new Date(o.created_at).toLocaleDateString('id-ID')}</td>
           <td class="px-6 py-4">
@@ -582,18 +590,17 @@
     function viewOrderDetails(orderId) {
       const o = orders.find(o => o.id === orderId);
       if (!o) return;
-      // Show order details in a nice format
       const detailsHtml = `
         <div class="space-y-2">
-          <p><strong>Order:</strong> ${o.order_id}</p>
-          <p><strong>Customer:</strong> ${o.customer_name}</p>
-          <p><strong>Email:</strong> ${o.customer_email}</p>
-          <p><strong>Phone:</strong> ${o.customer_phone}</p>
-          <p><strong>Address:</strong> ${o.address}, ${o.city}, ${o.province} ${o.postal_code}</p>
-          <p><strong>Items:</strong> ${o.items.map(i => i.name).join(', ')}</p>
+          <p><strong>Order:</strong> ${esc(o.order_id)}</p>
+          <p><strong>Customer:</strong> ${esc(o.customer_name)}</p>
+          <p><strong>Email:</strong> ${esc(o.customer_email)}</p>
+          <p><strong>Phone:</strong> ${esc(o.customer_phone)}</p>
+          <p><strong>Address:</strong> ${esc(o.address)}, ${esc(o.city)}, ${esc(o.province)} ${esc(o.postal_code)}</p>
+          <p><strong>Items:</strong> ${o.items.map(i => esc(i.name)).join(', ')}</p>
           <p><strong>Total:</strong> Rp${o.total.toLocaleString()}</p>
           <p><strong>Payment:</strong> BCA Transfer</p>
-          <p><strong>Status:</strong> ${o.status}</p>
+          <p><strong>Status:</strong> ${esc(o.status)}</p>
         </div>
       `;
       // Create a temporary modal to show details
@@ -637,13 +644,13 @@
       tbody.innerHTML = cards.map(c => `
         <tr class="border-b border-poke-line hover:bg-poke-gray transition">
           <td class="px-4 py-3">
-            ${c.image_url ? `<img src="${c.image_url}" class="w-12 h-12 object-cover rounded-lg">` : '<div class="w-12 h-12 bg-poke-gray rounded-lg flex items-center justify-center text-lg">🃏</div>'}
+            ${c.image_url ? `<img src="${esc(c.image_url)}" class="w-12 h-12 object-cover rounded-lg">` : '<div class="w-12 h-12 bg-poke-gray rounded-lg flex items-center justify-center text-lg">🃏</div>'}
           </td>
-          <td class="px-4 py-3 font-medium">${c.name}</td>
-          <td class="px-4 py-3 text-gray-500 text-xs">${c.category}</td>
-          <td class="px-4 py-3 font-semibold text-sm">${c.price}</td>
+          <td class="px-4 py-3 font-medium">${esc(c.name)}</td>
+          <td class="px-4 py-3 text-gray-500 text-xs">${esc(c.category)}</td>
+          <td class="px-4 py-3 font-semibold text-sm">${esc(c.price)}</td>
           <td class="px-4 py-3 text-center">${c.quantity || 1}</td>
-          <td class="px-4 py-3"><span class="status-${c.status === 'active' ? 'completed' : c.status === 'sold' ? 'cancelled' : 'pending'} px-2 py-1 rounded-full text-xs font-semibold">${c.status}</span></td>
+          <td class="px-4 py-3"><span class="status-${c.status === 'active' ? 'completed' : c.status === 'sold' ? 'cancelled' : 'pending'} px-2 py-1 rounded-full text-xs font-semibold">${esc(c.status)}</span></td>
           <td class="px-4 py-3">
             <div class="flex gap-2">
               <button onclick="editCard(${c.id})" class="text-xs text-blue-600 hover:underline">Edit</button>
@@ -776,7 +783,7 @@
       }
       list.innerHTML = categories.map(cat => `
         <div class="flex items-center justify-between p-3 bg-poke-gray rounded-lg">
-          <span class="text-sm font-medium">${cat.name}</span>
+          <span class="text-sm font-medium">${esc(cat.name)}</span>
           <button onclick="deleteCategory(${cat.id})" class="text-gray-400 hover:text-red-500 text-xs">Delete</button>
         </div>
       `).join('');
@@ -786,7 +793,7 @@
       const select = document.getElementById('card-category');
       const currentVal = select.value;
       select.innerHTML = '<option value="">Select...</option>' +
-        categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+        categories.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
       if (currentVal) select.value = currentVal;
     }
 

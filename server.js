@@ -3,29 +3,80 @@ const Database = require('better-sqlite3');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
-const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'campt-collection-secret-key-2026';
+
+// Generate a random JWT secret if not set in environment
+const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
+
+// Rate limiting store (in-memory, reset on restart)
+const loginAttempts = new Map();
+const LOGIN_MAX_ATTEMPTS = 5;
+const LOGIN_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const attempts = loginAttempts.get(ip) || [];
+  const recent = attempts.filter(t => now - t < LOGIN_WINDOW_MS);
+  loginAttempts.set(ip, recent);
+  if (recent.length >= LOGIN_MAX_ATTEMPTS) {
+    return false;
+  }
+  recent.push(now);
+  return true;
+}
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+app.use((req, res, next) => {
+  // Security headers
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '0'); // CSP handles this better
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self';"
+  );
+  // CORS restricted
+  const allowedOrigin = process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
+app.use(express.json({ limit: '1mb' }));
 app.use(express.static('public', { maxAge: 0, etag: false }));
 app.use('/uploads', express.static('public/uploads'));
 
-// Multer config for image uploads
+// Multer config for image uploads - strict extension whitelist
+const ALLOWED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp']);
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'public/uploads/'),
   filename: (req, file, cb) => {
-    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9) + path.extname(file.originalname);
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (!ALLOWED_EXTENSIONS.has(ext)) {
+      return cb(new Error('Invalid file type. Only images allowed.'));
+    }
+    const uniqueName = Date.now() + '-' + crypto.randomBytes(8).toString('hex') + ext;
     cb(null, uniqueName);
   }
 });
-const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = /^image\/(jpe?g|png|gif|webp)$/;
+    if (!allowed.test(file.mimetype)) {
+      return cb(new Error('Only image files are allowed'), false);
+    }
+    cb(null, true);
+  }
+});
 
 // ========== DATABASE SETUP ==========
 const db = new Database('campt.db');
@@ -92,12 +143,15 @@ if (catCount.count === 0) {
   console.log('✅ Default categories seeded');
 }
 
-// Seed default admin if not exists
+// Seed default admin with a random password (print once)
 const adminExists = db.prepare('SELECT id FROM users WHERE username = ?').get('admin');
 if (!adminExists) {
-  const hashedPassword = bcrypt.hashSync('admin123', 10);
+  const randomPassword = crypto.randomBytes(6).toString('base64');
+  const hashedPassword = bcrypt.hashSync(randomPassword, 12);
   db.prepare('INSERT INTO users (username, password, role) VALUES (?, ?, ?)').run('admin', hashedPassword, 'admin');
-  console.log('✅ Default admin created: admin / admin123');
+  console.log('✅ Default admin created');
+  console.log(`   Username: admin`);
+  console.log(`   Password: ${randomPassword} (CHANGE THIS IMMEDIATELY)`);
 }
 
 // Seed sample cards if empty
@@ -122,6 +176,10 @@ function authenticateToken(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+    // ENFORCE: only admin role can access admin routes
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
     req.user = decoded;
     next();
   } catch (err) {
@@ -134,13 +192,19 @@ app.post('/api/auth/login', (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
 
+  // Rate limiting per IP
+  const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
+  if (!checkRateLimit(clientIp)) {
+    return res.status(429).json({ error: 'Too many login attempts. Try again in 10 minutes.' });
+  }
+
   const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
   if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
   const validPassword = bcrypt.compareSync(password, user.password);
   if (!validPassword) return res.status(401).json({ error: 'Invalid credentials' });
 
-  const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '24h' });
+  const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '8h' });
   res.json({ token, user: { id: user.id, username: user.username, role: user.role } });
 });
 
@@ -156,7 +220,6 @@ app.get('/api/categories', (req, res) => {
   if (all === 'true') {
     categories = db.prepare('SELECT * FROM categories ORDER BY name').all();
   } else {
-    // Only return categories that have active cards
     categories = db.prepare(`
       SELECT DISTINCT c.* FROM categories c
       INNER JOIN cards ON cards.category = c.name
@@ -170,14 +233,15 @@ app.get('/api/categories', (req, res) => {
 app.post('/api/admin/categories', authenticateToken, (req, res) => {
   const { name } = req.body;
   if (!name) return res.status(400).json({ error: 'Category name required' });
-  
+
   try {
     const result = db.prepare('INSERT INTO categories (name) VALUES (?)').run(name);
     const category = db.prepare('SELECT * FROM categories WHERE id = ?').get(Number(result.lastInsertRowid));
     res.json(category);
   } catch (err) {
     if (err.message.includes('UNIQUE')) return res.status(400).json({ error: 'Category already exists' });
-    throw err;
+    console.error('Category create error:', err.message);
+    return res.status(500).json({ error: 'Failed to create category' });
   }
 });
 
@@ -185,7 +249,7 @@ app.put('/api/admin/categories/:id', authenticateToken, (req, res) => {
   const { name } = req.body;
   const existing = db.prepare('SELECT * FROM categories WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'Category not found' });
-  
+
   db.prepare('UPDATE categories SET name = ? WHERE id = ?').run(name || existing.name, req.params.id);
   const category = db.prepare('SELECT * FROM categories WHERE id = ?').get(req.params.id);
   res.json(category);
@@ -194,7 +258,7 @@ app.put('/api/admin/categories/:id', authenticateToken, (req, res) => {
 app.delete('/api/admin/categories/:id', authenticateToken, (req, res) => {
   const existing = db.prepare('SELECT * FROM categories WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'Category not found' });
-  
+
   db.prepare('DELETE FROM categories WHERE id = ?').run(req.params.id);
   res.json({ message: 'Category deleted' });
 });
@@ -207,22 +271,26 @@ app.post('/api/orders', (req, res) => {
     return res.status(400).json({ error: 'Customer info and items required' });
   }
 
+  // Input validation
+  const nameRegex = /^[a-zA-Z0-9\s.'\-]{2,50}$/;
+  if (!customer.name || !nameRegex.test(customer.name)) {
+    return res.status(400).json({ error: 'Invalid customer name' });
+  }
+  if (!customer.email || !customer.email.includes('@')) {
+    return res.status(400).json({ error: 'Invalid email' });
+  }
+
   const total = items.reduce((sum, item) => {
     return sum + (parseInt(item.price.replace(/[^0-9]/g, '')) || 0);
   }, 0);
 
-  // Generate order ID: purchase#ddmmyyNN
+  // Generate order ID with random suffix (non-predictable)
   const now = new Date();
   const dd = String(now.getDate()).padStart(2, '0');
   const mm = String(now.getMonth() + 1).padStart(2, '0');
   const yy = String(now.getFullYear()).slice(-2);
-  const datePrefix = `purchase#${dd}${mm}${yy}`;
-
-  // Count orders today
-  const todayStart = `${now.getFullYear()}-${mm}-${dd} 00:00:00`;
-  const todayCount = db.prepare("SELECT COUNT(*) as count FROM orders WHERE created_at >= ?").get(todayStart).count;
-  const orderNum = String(todayCount + 1).padStart(2, '0');
-  const orderId = `${datePrefix}${orderNum}`;
+  const randomSuffix = String(Math.floor(Math.random() * 900) + 100);
+  const orderId = `purchase#${dd}${mm}${yy}${randomSuffix}`;
 
   try {
     db.prepare(`
@@ -232,21 +300,29 @@ app.post('/api/orders', (req, res) => {
 
     res.json({ order_id: orderId, message: 'Order placed successfully' });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to place order' });
+    if (err.message.includes('UNIQUE')) {
+      return res.status(409).json({ error: 'Order already exists' });
+    }
+    console.error('Order create error:', err.message);
+    return res.status(500).json({ error: 'Failed to place order' });
   }
 });
 
 app.get('/api/admin/orders', authenticateToken, (req, res) => {
   const orders = db.prepare('SELECT * FROM orders ORDER BY created_at DESC').all();
-  orders.forEach(o => o.items = JSON.parse(o.items));
+  orders.forEach(o => { try { o.items = JSON.parse(o.items); } catch(e) { o.items = []; }});
   res.json(orders);
 });
 
 app.put('/api/admin/orders/:id/status', authenticateToken, (req, res) => {
   const { status } = req.body;
+  const validStatuses = ['pending', 'processing', 'awaiting_payment', 'shipped', 'completed', 'cancelled'];
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({ error: 'Invalid status' });
+  }
+
   db.prepare('UPDATE orders SET status = ? WHERE id = ?').run(status, req.params.id);
 
-  // Auto-mark cards as sold when order is confirmed as completed
   if (status === 'completed') {
     const order = db.prepare('SELECT items FROM orders WHERE id = ?').get(req.params.id);
     if (order) {
@@ -260,10 +336,9 @@ app.put('/api/admin/orders/:id/status', authenticateToken, (req, res) => {
             soldCount += result.changes;
           }
         });
-        const msg = soldCount > 0 ? `Order status updated — ${soldCount} card(s) marked as sold` : 'Order status updated';
-        return res.json({ message: msg });
+        return res.json({ message: soldCount > 0 ? `Order status updated — ${soldCount} card(s) marked as sold` : 'Order status updated' });
       } catch (err) {
-        console.error('Failed to auto-mark cards as sold:', err);
+        console.error('Failed to auto-mark cards as sold:', err.message);
       }
     }
   }
@@ -271,27 +346,33 @@ app.put('/api/admin/orders/:id/status', authenticateToken, (req, res) => {
   res.json({ message: 'Order status updated' });
 });
 
-// Public recent buyers (for trust/social proof)
+// Public recent buyers (for trust/social proof) - returns ONLY completed orders with blurred data
 app.get('/api/recent-buyers', (req, res) => {
-  const orders = db.prepare(`
-    SELECT order_id, customer_name, items, status, created_at
-    FROM orders WHERE status = 'completed'
-    ORDER BY created_at DESC LIMIT 12
-  `).all();
+  try {
+    const orders = db.prepare(`
+      SELECT order_id, customer_name, items, status, created_at
+      FROM orders WHERE status = 'completed'
+      ORDER BY created_at DESC LIMIT 12
+    `).all();
 
-  const buyers = orders.map(o => {
-    const items = JSON.parse(o.items);
-    const name = o.customer_name;
-    const blurred = name.charAt(0) + '***' + name.charAt(name.length - 1);
-    return {
-      order_id: o.order_id.replace(/(\d{6})\d{2}/, '$1##'),
-      customer_name: blurred,
-      item_names: items.map(i => i.name),
-      date: new Date(o.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
-    };
-  });
+    const buyers = orders.map(o => {
+      let items = [];
+      try { items = JSON.parse(o.items); } catch(e) { items = []; }
+      const name = o.customer_name;
+      const blurred = name.length > 2 ? name.charAt(0) + '***' + name.charAt(name.length - 1) : name.charAt(0) + '***';
+      return {
+        order_id: o.order_id.replace(/(\d{6})\d{3}/, '$1###'),
+        customer_name: blurred,
+        item_names: items.map(i => i.name),
+        date: new Date(o.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+      };
+    });
 
-  res.json(buyers);
+    res.json(buyers);
+  } catch (err) {
+    console.error('Recent buyers error:', err.message);
+    return res.status(500).json({ error: 'Failed to load recent buyers' });
+  }
 });
 
 // Delete single order
@@ -320,8 +401,13 @@ app.get('/api/cards', (req, res) => {
   }
 
   query += ' ORDER BY created_at DESC';
-  const cards = db.prepare(query).all(...params);
-  res.json(cards);
+  try {
+    const cards = db.prepare(query).all(...params);
+    res.json(cards);
+  } catch (err) {
+    console.error('Cards query error:', err.message);
+    return res.status(500).json({ error: 'Failed to load cards' });
+  }
 });
 
 app.get('/api/cards/:id', (req, res) => {
@@ -351,7 +437,6 @@ app.put('/api/admin/cards/:id', authenticateToken, upload.single('image'), (req,
 
   let image_url = existing.image_url;
   if (req.file) {
-    // Delete old image
     if (existing.image_url) {
       const oldPath = path.join(__dirname, 'public', existing.image_url);
       if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
@@ -380,7 +465,6 @@ app.delete('/api/admin/cards/:id', authenticateToken, (req, res) => {
   const card = db.prepare('SELECT * FROM cards WHERE id = ?').get(req.params.id);
   if (!card) return res.status(404).json({ error: 'Card not found' });
 
-  // Delete image file
   if (card.image_url) {
     const imgPath = path.join(__dirname, 'public', card.image_url);
     if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
@@ -402,5 +486,4 @@ app.get('/api/admin/stats', authenticateToken, (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Campt's Collection server running on http://localhost:${PORT}`);
   console.log(`📦 Admin panel: http://localhost:${PORT}/admin.html`);
-  console.log(`🔐 Default login: admin / admin123`);
 });

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -254,6 +254,14 @@
   <script>
     const API_BASE = window.location.origin;
 
+    // XSS protection
+    function esc(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = String(str);
+      return div.innerHTML;
+    }
+
     // Toast notification
     function showToast(message, type = 'info') {
       const container = document.getElementById('toast-container');
@@ -265,7 +273,7 @@
       };
       const borderColors = { success: 'border-l-4 border-green-500', error: 'border-l-4 border-red-500', info: 'border-l-4 border-blue-500' };
       toast.className = `toast-enter flex items-center gap-3 bg-white px-5 py-4 rounded-lg shadow-xl ${borderColors[type]} min-w-[300px] max-w-[400px]`;
-      toast.innerHTML = `${icons[type]}<span class="text-sm font-medium text-gray-800">${message}</span>`;
+      toast.innerHTML = `${icons[type]}<span class="text-sm font-medium text-gray-800">${esc(message)}</span>`;
       container.appendChild(toast);
       setTimeout(() => { toast.classList.remove('toast-enter'); toast.classList.add('toast-exit'); setTimeout(() => toast.remove(), 300); }, 2500);
     }
@@ -287,12 +295,12 @@
         return `
           <div class="flex gap-3">
             <div class="w-16 h-16 bg-poke-gray rounded-lg flex items-center justify-center text-2xl flex-shrink-0">
-              ${item.image_url ? `<img src="${item.image_url}" class="w-full h-full object-cover rounded-lg">` : '🃏'}
+              ${item.image_url ? `<img src="${esc(item.image_url)}" class="w-full h-full object-cover rounded-lg">` : '🃏'}
             </div>
             <div class="flex-1 min-w-0">
-              <p class="font-medium text-sm truncate">${item.name}</p>
-              <p class="text-xs text-gray-500">${item.category}</p>
-              <p class="text-sm font-semibold text-green-600 mt-1">${item.price}</p>
+              <p class="font-medium text-sm truncate">${esc(item.name)}</p>
+              <p class="text-xs text-gray-500">${esc(item.category)}</p>
+              <p class="text-sm font-semibold text-green-600 mt-1">${esc(item.price)}</p>
             </div>
           </div>
         `;

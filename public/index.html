@@ -90,11 +90,6 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
           </svg>Cart (<span id="cart-count">0</span>)
         </button>
-        <a href="/login.html" id="nav-login" class="px-4 py-2 bg-poke-red text-white text-sm font-semibold rounded-lg hover:bg-poke-darkred transition">Login</a>
-        <div id="nav-avatar" class="hidden flex items-center gap-2">
-          <div class="w-8 h-8 rounded-full bg-poke-gray flex items-center justify-center text-sm font-semibold">A</div>
-          <button id="logout-btn" class="text-xs text-gray-400 hover:text-poke-red transition">Logout</button>
-        </div>
       </div>
     </div>
   </nav>
@@ -278,7 +273,7 @@
           </div>
         </div>
       </div>
-      <p class="text-center text-xs text-gray-400 mt-6">Login untuk melihat status order kamu.</p>
+      <p class="text-center text-xs text-gray-400 mt-6">Order akan ditampilkan di sini setelah konfirmasi pembayaran.</p>
     </div>
   </section>
 
@@ -366,22 +361,13 @@
     let currentPage = 1;
     const ITEMS_PER_PAGE = 16;
 
-    // Check if admin is logged in
-    function checkAdminAuth() {
-      const token = localStorage.getItem('campt_token');
-      if (token) {
-        document.getElementById('nav-login').classList.add('hidden');
-        document.getElementById('nav-avatar').classList.remove('hidden');
-        document.getElementById('nav-dashboard').classList.remove('hidden');
-      }
+    // XSS protection: escape HTML entities in user-provided data
+    function esc(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = String(str);
+      return div.innerHTML;
     }
-    checkAdminAuth();
-
-    // Logout
-    document.getElementById('logout-btn').addEventListener('click', () => {
-      localStorage.removeItem('campt_token');
-      window.location.reload();
-    });
 
     // Cart
     let cart = JSON.parse(localStorage.getItem('campt_cart') || '[]');
@@ -476,11 +462,11 @@
           return `
             <div class="flex items-center justify-between py-3 ${i < cart.length - 1 ? 'border-b border-poke-line' : ''}">
               <div>
-                <p class="font-medium text-sm">${item.name}</p>
-                <p class="text-xs text-gray-500">${item.category}</p>
+                <p class="font-medium text-sm">${esc(item.name)}</p>
+                <p class="text-xs text-gray-500">${esc(item.category)}</p>
               </div>
               <div class="flex items-center gap-3">
-                <span class="font-semibold text-sm">${item.price}</span>
+                <span class="font-semibold text-sm">${esc(item.price)}</span>
                 <button onclick="removeFromCart(${i})" class="text-gray-400 hover:text-red-500 text-sm">&times;</button>
               </div>
             </div>
@@ -641,20 +627,20 @@
         <div class="card-hover bg-white rounded-lg overflow-hidden border border-[#e8e8e8] transition-all duration-300 card-enter" style="animation-delay: ${i * 30}ms">
           <div class="aspect-[3/4] bg-[#f5f5f5] relative overflow-hidden group">
             ${card.image_url
-              ? `<img src="${card.image_url}" alt="${card.name}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]">`
+              ? `<img src="${esc(card.image_url)}" alt="${esc(card.name)}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]">`
               : `<div class="w-full h-full flex items-center justify-center">${getCardPlaceholder()}</div>`
             }
-            ${card.grading ? `<div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded text-[11px] font-semibold text-gray-800 tracking-wide">${card.grading}</div>` : ''}
+            ${card.grading ? `<div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded text-[11px] font-semibold text-gray-800 tracking-wide">${esc(card.grading)}</div>` : ''}
             ${card.status === 'sold' ? `<div class="absolute inset-0 bg-black/40 flex items-center justify-center"><span class="bg-white px-5 py-2 text-sm font-semibold tracking-wider uppercase">Sold</span></div>` : ''}
           </div>
           <div class="p-4">
             <div class="flex items-center gap-2 mb-2">
-              <span class="text-[11px] font-medium text-gray-400 uppercase tracking-widest">${card.category}</span>
+              <span class="text-[11px] font-medium text-gray-400 uppercase tracking-widest">${esc(card.category)}</span>
               <span class="text-[11px] text-gray-300">·</span>
-              <span class="text-[11px] font-medium text-gray-400">${card.origin || 'JP'}</span>
+              <span class="text-[11px] font-medium text-gray-400">${esc(card.origin || 'JP')}</span>
             </div>
-            <h3 class="font-semibold text-sm text-gray-900 mb-1 truncate">${card.name}</h3>
-            <p class="text-sm font-medium text-gray-600 mb-3">${card.price}</p>
+            <h3 class="font-semibold text-sm text-gray-900 mb-1 truncate">${esc(card.name)}</h3>
+            <p class="text-sm font-medium text-gray-600 mb-3">${esc(card.price)}</p>
             ${card.status === 'sold'
               ? ''
               : `<button data-card-id="${card.id}" class="view-details-btn w-full py-2.5 bg-[#111] text-white text-xs font-semibold rounded-md hover:bg-[#333] transition-colors duration-200 tracking-wide uppercase">View Details</button>`
@@ -854,12 +840,12 @@
         container.innerHTML = buyers.map(b => `
           <div class="bg-white rounded-lg border border-poke-line p-4">
             <div class="flex items-center justify-between mb-2">
-              <span class="text-xs text-gray-400">${b.order_id}</span>
+              <span class="text-xs text-gray-400">${esc(b.order_id)}</span>
               <span class="text-[10px] text-green-600 font-medium bg-green-50 px-2 py-0.5 rounded-full">Completed</span>
             </div>
-            <p class="font-medium text-sm">${b.customer_name}</p>
-            <p class="text-xs text-gray-500 mt-1">${b.item_names.join(', ')}</p>
-            <p class="text-xs text-gray-400 mt-2">${b.date}</p>
+            <p class="font-medium text-sm">${esc(b.customer_name)}</p>
+            <p class="text-xs text-gray-500 mt-1">${esc(b.item_names.join(', '))}</p>
+            <p class="text-xs text-gray-400 mt-2">${esc(b.date)}</p>
           </div>
         `).join('');
       } catch (err) {
