@@ -492,19 +492,24 @@
           <td class="px-6 py-4 text-xs">${o.items.map(i => i.name).join(', ')}</td>
           <td class="px-6 py-4 font-semibold">Rp${(o.total || 0).toLocaleString()}</td>
           <td class="px-6 py-4">
-            <select onchange="updateOrderStatus(${o.id}, this.value)" class="text-xs border border-poke-line rounded px-2 py-1 focus:outline-none">
-              <option value="pending" ${o.status==='pending'?'selected':''}>Pending</option>
-              <option value="processing" ${o.status==='processing'?'selected':''}>Processing</option>
-              <option value="completed" ${o.status==='completed'?'selected':''}>Completed</option>
-              <option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option>
-            </select>
+            <span class="status-${o.status} px-2 py-1 rounded-full text-xs font-semibold">${o.status}</span>
           </td>
           <td class="px-6 py-4 text-gray-500 text-xs">${new Date(o.created_at).toLocaleDateString('id-ID')}</td>
           <td class="px-6 py-4">
-            <button onclick="viewOrderDetails(${o.id})" class="text-xs text-poke-red hover:underline">Details</button>
+            <div class="flex gap-2">
+              ${o.status === 'pending' ? `<button onclick="confirmPayment(${o.id})" class="text-xs bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition">Confirm</button>` : ''}
+              <button onclick="viewOrderDetails(${o.id})" class="text-xs text-poke-red hover:underline">Details</button>
+            </div>
           </td>
         </tr>
       `).join('');
+    }
+
+    async function confirmPayment(orderId) {
+      if (!confirm('Confirm payment for this order?')) return;
+      await updateOrderStatus(orderId, 'processing');
+      loadOrders();
+      loadDashboard();
     }
 
     async function updateOrderStatus(orderId, status) {

@@ -97,6 +97,9 @@
           <span class="font-semibold">Total:</span>
           <span id="cart-total" class="font-bold text-poke-red">Rp0</span>
         </div>
+        <button onclick="openWhatsApp()" class="w-full py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition text-sm mb-2">
+          💬 Chat WhatsApp
+        </button>
         <button onclick="window.location.href='/checkout.html'" class="w-full py-3 bg-poke-red text-white font-semibold rounded-lg hover:bg-poke-darkred transition text-sm">
           Checkout
         </button>
@@ -354,6 +357,17 @@
       cart.splice(index, 1);
       updateCart();
       document.getElementById('cart-btn').click();
+    }
+
+    function openWhatsApp() {
+      if (cart.length === 0) {
+        alert('Cart is empty!');
+        return;
+      }
+      const items = cart.map(i => `- ${i.name} (${i.price})`).join('%0A');
+      const total = cart.reduce((sum, i) => sum + (parseInt(i.price.replace(/[^0-9]/g, '')) || 0), 0);
+      const msg = `Halo! Mau tanya tentang item ini:%0A${items}%0A%0ATotal: Rp${total.toLocaleString()}%0A%0AMasih available?`;
+      window.open(`https://wa.me/628XXXXXXXXXX?text=${msg}`, '_blank');
     }
 
     // Emoji map for card categories
