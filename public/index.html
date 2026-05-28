@@ -80,7 +80,6 @@
       </div>
       <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
         <a href="#gallery" class="hover:text-poke-red transition">The Vault</a>
-        <a href="#active-orders" class="hover:text-poke-red transition">Active Orders</a>
         <a href="#faq" class="hover:text-poke-red transition">FAQ</a>
         <a href="/admin.html" id="nav-dashboard" class="hover:text-poke-red transition hidden">Dashboard</a>
       </div>
@@ -231,23 +230,6 @@
         </div>
       </div>
       <p id="no-recent-buyers" class="hidden text-center text-gray-400 text-sm py-4">No completed orders yet. Be the first!</p>
-    </div>
-  </section>
-
-  <!-- Active Orders Section -->
-  <section id="active-orders" class="border-t border-poke-line">
-    <div class="max-w-3xl mx-auto px-6 py-16">
-      <div class="flex items-center justify-between mb-8">
-        <h2 class="text-2xl font-bold">Active Orders</h2>
-        <span class="flex items-center gap-1.5 text-xs text-green-600 font-medium">
-          <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-          Live
-        </span>
-      </div>
-      <div id="active-orders-list" class="space-y-4">
-        <!-- Loaded dynamically from API -->
-      </div>
-      <p class="text-center text-xs text-gray-400 mt-6">Order akan ditampilkan di sini setelah konfirmasi pembayaran.</p>
     </div>
   </section>
 
@@ -811,7 +793,6 @@
     loadCategories();
     loadCards();
     loadRecentBuyers();
-    loadActiveOrders();
 
     // Load recent buyers (social proof)
     async function loadRecentBuyers() {
@@ -842,43 +823,6 @@
         `).join('');
       } catch (err) {
         console.error('Failed to load recent buyers:', err);
-      }
-    }
-
-    // Load active orders (non-completed)
-    async function loadActiveOrders() {
-      try {
-        const res = await fetch(`${API_BASE}/api/active-orders`);
-        const orders = await res.json();
-        const container = document.getElementById('active-orders-list');
-
-        if (!orders || orders.length === 0) {
-          container.innerHTML = `
-            <div class="text-center text-gray-400 py-12">
-              <svg class="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-              <p class="text-sm">Belum ada order aktif.</p>
-            </div>`;
-          return;
-        }
-
-        const statusBadge = (color, label) => `
-          <span class="text-[10px] text-${color}-600 font-medium bg-${color}-50 px-2 py-0.5 rounded-full">${esc(label)}</span>`;
-
-        container.innerHTML = orders.map(o => `
-          <div class="bg-white rounded-lg border border-poke-line p-4 flex items-center gap-4">
-            <div class="w-10 h-10 rounded-lg bg-poke-gray flex items-center justify-center text-xs font-bold text-gray-500 flex-shrink-0">${esc(o.customer_name.charAt(0))}</div>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2">
-                <span class="font-medium text-sm">${esc(o.customer_name)}</span>
-                ${statusBadge(o.status_color, o.status_label)}
-              </div>
-              <p class="text-xs text-gray-500 mt-0.5">${esc(o.item_names.join(', '))} — Rp${o.total.toLocaleString()}</p>
-              <p class="text-[10px] text-gray-400 mt-1">${esc(o.date)}</p>
-            </div>
-          </div>
-        `).join('');
-      } catch (err) {
-        console.error('Failed to load active orders:', err);
       }
     }
   </script>
