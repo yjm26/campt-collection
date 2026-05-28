@@ -271,6 +271,29 @@ app.put('/api/admin/orders/:id/status', authenticateToken, (req, res) => {
   res.json({ message: 'Order status updated' });
 });
 
+// Public recent buyers (for trust/social proof)
+app.get('/api/recent-buyers', (req, res) => {
+  const orders = db.prepare(`
+    SELECT order_id, customer_name, items, status, created_at
+    FROM orders WHERE status = 'completed'
+    ORDER BY created_at DESC LIMIT 12
+  `).all();
+
+  const buyers = orders.map(o => {
+    const items = JSON.parse(o.items);
+    const name = o.customer_name;
+    const blurred = name.charAt(0) + '***' + name.charAt(name.length - 1);
+    return {
+      order_id: o.order_id.replace(/(\d{6})\d{2}/, '$1##'),
+      customer_name: blurred,
+      item_names: items.map(i => i.name),
+      date: new Date(o.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+    };
+  });
+
+  res.json(buyers);
+});
+
 // Delete single order
 app.delete('/api/admin/orders/:id', authenticateToken, (req, res) => {
   db.prepare('DELETE FROM orders WHERE id = ?').run(req.params.id);
