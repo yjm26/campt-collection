@@ -375,6 +375,51 @@ app.get('/api/recent-buyers', (req, res) => {
   }
 });
 
+// Public active orders (non-completed, blurred)
+app.get('/api/active-orders', (req, res) => {
+  try {
+    const orders = db.prepare(`
+      SELECT order_id, customer_name, items, total, status, payment_method, created_at
+      FROM orders WHERE status != 'completed' AND status != 'cancelled'
+      ORDER BY created_at DESC LIMIT 20
+    `).all();
+
+    const activeOrders = orders.map(o => {
+      let items = [];
+      try { items = JSON.parse(o.items); } catch(e) { items = []; }
+      const name = o.customer_name;
+      const blurred = name.length > 2 ? name.charAt(0) + '***' + name.charAt(name.length - 1) : name.charAt(0) + '***';
+      const statusLabels = {
+        'pending': 'Awaiting Payment',
+        'processing': 'Processing',
+        'shipped': 'Shipped',
+        'awaiting_payment': 'Awaiting Payment'
+      };
+      const statusColors = {
+        'pending': 'orange',
+        'processing': 'blue',
+        'shipped': 'purple',
+        'awaiting_payment': 'orange'
+      };
+      return {
+        order_id: o.order_id.replace(/(\d{6})\d{3}/, '$1###'),
+        customer_name: blurred,
+        item_names: items.map(i => i.name),
+        total: o.total,
+        status: o.status,
+        status_label: statusLabels[o.status] || o.status,
+        status_color: statusColors[o.status] || 'gray',
+        date: new Date(o.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+      };
+    });
+
+    res.json(activeOrders);
+  } catch (err) {
+    console.error('Active orders error:', err.message);
+    return res.status(500).json({ error: 'Failed to load active orders' });
+  }
+});
+
 // Delete single order
 app.delete('/api/admin/orders/:id', authenticateToken, (req, res) => {
   db.prepare('DELETE FROM orders WHERE id = ?').run(req.params.id);
