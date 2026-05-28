@@ -186,6 +186,10 @@
       <!-- Cards loaded dynamically from API -->
     </div>
 
+    <!-- Pagination -->
+    <div id="pagination" class="flex items-center justify-end gap-1 mt-8 mb-4 hidden">
+    </div>
+
     <div id="loading" class="text-center py-12 text-gray-400">
       <p>Loading cards...</p>
     </div>
@@ -226,6 +230,8 @@
     const API_BASE = window.location.origin;
     let allCards = [];
     let currentCategory = '';
+    let currentPage = 1;
+    const ITEMS_PER_PAGE = 16; // 4x4 grid
 
     // Check if admin is logged in
     function checkAdminAuth() {
@@ -454,6 +460,7 @@
       const grid = document.getElementById('cards-grid');
       const loading = document.getElementById('loading');
       const empty = document.getElementById('empty-gallery');
+      const pagination = document.getElementById('pagination');
 
       loading.classList.add('hidden');
 
@@ -476,11 +483,19 @@
       if (filtered.length === 0) {
         grid.innerHTML = '';
         empty.classList.remove('hidden');
+        pagination.classList.add('hidden');
         return;
       }
 
       empty.classList.add('hidden');
-      grid.innerHTML = filtered.map(card => `
+
+      // Paginate
+      const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+      if (currentPage > totalPages) currentPage = totalPages;
+      const start = (currentPage - 1) * ITEMS_PER_PAGE;
+      const pageCards = filtered.slice(start, start + ITEMS_PER_PAGE);
+
+      grid.innerHTML = pageCards.map(card => `
         <div class="card-hover border border-poke-line rounded-xl overflow-hidden transition-all duration-200">
           <div class="aspect-square bg-poke-gray flex items-center justify-center text-5xl overflow-hidden">
             ${card.image_url
@@ -497,11 +512,77 @@
             <p class="text-sm text-gray-500 mb-4">${card.price}</p>
             ${card.status === 'sold'
               ? `<button class="w-full py-2.5 bg-gray-200 text-gray-400 text-sm font-semibold rounded-lg cursor-not-allowed">Sold Out</button>`
-              : `<button onclick='openPreview(${JSON.stringify(card).replace(/'/g, "\\'")})' class="w-full py-2.5 bg-poke-red text-white text-sm font-semibold rounded-lg hover:bg-poke-darkred transition">View Details</button>`
+              : `<button onclick='openPreview(${JSON.stringify(card).replace(/'/g, "\\\\'")})' class="w-full py-2.5 bg-poke-red text-white text-sm font-semibold rounded-lg hover:bg-poke-darkred transition">View Details</button>`
             }
           </div>
         </div>
       `).join('');
+
+      // Render pagination
+      renderPagination(totalPages);
+    }
+
+    // Render pagination
+    function renderPagination(totalPages) {
+      const pagination = document.getElementById('pagination');
+      if (totalPages <= 1) {
+        pagination.classList.add('hidden');
+        return;
+      }
+      pagination.classList.remove('hidden');
+
+      let html = '';
+
+      // Previous button
+      html += `<button onclick="goToPage(${currentPage - 1})" class="px-3 py-1.5 text-sm rounded-lg border ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-poke-red hover:text-white hover:border-poke-red'} transition" ${currentPage === 1 ? 'disabled' : ''}>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+      </button>`;
+
+      // Page numbers with ellipsis
+      const pages = getPageNumbers(currentPage, totalPages);
+      pages.forEach(p => {
+        if (p === '...') {
+          html += `<span class="px-2 py-1.5 text-sm text-gray-400">...</span>`;
+        } else {
+          html += `<button onclick="goToPage(${p})" class="px-3 py-1.5 text-sm rounded-lg border transition ${p === currentPage ? 'bg-poke-red text-white border-poke-red' : 'text-gray-600 hover:bg-poke-red hover:text-white hover:border-poke-red'}">${p}</button>`;
+        }
+      });
+
+      // Next button
+      html += `<button onclick="goToPage(${currentPage + 1})" class="px-3 py-1.5 text-sm rounded-lg border ${currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-poke-red hover:text-white hover:border-poke-red'} transition" ${currentPage === totalPages ? 'disabled' : ''}>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+      </button>`;
+
+      pagination.innerHTML = html;
+    }
+
+    function getPageNumbers(current, total) {
+      if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+      if (current <= 3) return [1, 2, 3, 4, '...', total - 1, total];
+      if (current >= total - 2) return [1, 2, '...', total - 3, total - 2, total - 1, total];
+      return [1, '...', current - 1, current, current + 1, '...', total];
+    }
+
+    function goToPage(page) {
+      const totalPages = Math.ceil(getFilteredCount() / ITEMS_PER_PAGE);
+      if (page < 1 || page > totalPages) return;
+      currentPage = page;
+      renderCards(allCards);
+      document.getElementById('cards-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function getFilteredCount() {
+      let filtered = allCards.filter(c => c.status !== 'inactive');
+      if (currentCategory) filtered = filtered.filter(c => c.category === currentCategory);
+      const searchTerm = document.getElementById('search-input').value.toLowerCase();
+      if (searchTerm) {
+        filtered = filtered.filter(c =>
+          c.name.toLowerCase().includes(searchTerm) ||
+          c.category.toLowerCase().includes(searchTerm) ||
+          (c.set_name && c.set_name.toLowerCase().includes(searchTerm))
+        );
+      }
+      return filtered.length;
     }
 
     // Filter buttons
@@ -509,6 +590,7 @@
       const btn = e.target.closest('.filter-btn');
       if (!btn) return;
       currentCategory = btn.dataset.category;
+      currentPage = 1; // reset to page 1
       document.querySelectorAll('.filter-btn').forEach(b => {
         b.classList.remove('bg-poke-red', 'text-white');
         b.classList.add('text-gray-600');
@@ -519,7 +601,10 @@
     });
 
     // Search
-    document.getElementById('search-input').addEventListener('input', () => renderCards(allCards));
+    document.getElementById('search-input').addEventListener('input', () => {
+      currentPage = 1; // reset to page 1
+      renderCards(allCards);
+    });
 
     // ==================== 3D POKÉBALL ====================
     const canvas = document.getElementById('pokeball-canvas');
