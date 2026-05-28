@@ -512,7 +512,7 @@
             <p class="text-sm text-gray-500 mb-4">${card.price}</p>
             ${card.status === 'sold'
               ? `<button class="w-full py-2.5 bg-gray-200 text-gray-400 text-sm font-semibold rounded-lg cursor-not-allowed">Sold Out</button>`
-              : `<button onclick='openPreview(${JSON.stringify(card).replace(/'/g, "\\\\'")})' class="w-full py-2.5 bg-poke-red text-white text-sm font-semibold rounded-lg hover:bg-poke-darkred transition">View Details</button>`
+              : `<button onclick='openPreview(${JSON.stringify(card).replace(/'/g, "\\'")})' class="w-full py-2.5 bg-poke-red text-white text-sm font-semibold rounded-lg hover:bg-poke-darkred transition">View Details</button>`
             }
           </div>
         </div>
