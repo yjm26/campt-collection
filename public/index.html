@@ -3,244 +3,228 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Campt's Collection</title>
+  <title>Campt's Collection - Premium Vault</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
           colors: {
-            bg: { primary: '#ffffff', secondary: '#fafafa', tertiary: '#f5f5f5' },
-            surface: { DEFAULT: '#ffffff', hover: '#fafafa', active: '#f0f0f0' },
-            border: { DEFAULT: '#e8e8e8', hover: '#d0d0d0' },
-            text: { primary: '#111111', secondary: '#666666', tertiary: '#999999' },
-            accent: { DEFAULT: '#CC0000', hover: '#aa0000', light: '#fff0f0' }
-          },
-          boxShadow: {
-            card: '0 1px 2px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.06)',
-            cardHover: '0 4px 12px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.04)',
-            modal: '0 20px 60px rgba(0,0,0,0.12), 0 8px 20px rgba(0,0,0,0.08)',
-            toast: '0 8px 24px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)'
-          },
-          animation: {
-            'fade-in': 'fadeIn 0.2s ease-out',
-            'slide-up': 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-            'slide-right': 'slideRight 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-            'scale-in': 'scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
-          },
-          keyframes: {
-            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-            slideUp: { '0%': { opacity: '0', transform: 'translateY(8px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
-            slideRight: { '0%': { transform: 'translateX(-100%)' }, '100%': { transform: 'translateX(0)' } },
-            scaleIn: { '0%': { opacity: '0', transform: 'scale(0.96)' }, '100%': { opacity: '1', transform: 'scale(1)' } }
+            poke: { red: '#CC0000', darkred: '#9E0000', white: '#FFFFFF', black: '#1a1a1a', gray: '#f5f5f5', line: '#e0e0e0' }
           }
         }
       }
     }
   </script>
   <style>
-    /* Typography hierarchy — impeccable.style */
-    body { font-family: 'Inter', system-ui, sans-serif; color: #111; background: #fafafa; -webkit-font-smoothing: antialiased; }
-    
-    /* Smooth transitions */
-    * { transition-property: background-color, border-color, color, fill, stroke, box-shadow, transform, opacity; transition-duration: 0.15s; transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
-    button, a { transition-duration: 0.15s; }
-    
-    /* Card styles */
-    .product-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 12px; overflow: hidden; transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
-    .product-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.04); border-color: #d0d0d0; }
-    
-    /* Button styles */
-    .btn-primary { background: #CC0000; color: #fff; font-weight: 500; border-radius: 8px; padding: 10px 16px; font-size: 14px; transition: all 0.15s; }
-    .btn-primary:hover { background: #aa0000; transform: translateY(-1px); }
-    .btn-primary:active { transform: translateY(0); }
-    .btn-secondary { background: #fff; color: #111; border: 1px solid #e8e8e8; font-weight: 500; border-radius: 8px; padding: 10px 16px; font-size: 14px; transition: all 0.15s; }
-    .btn-secondary:hover { background: #f5f5f5; border-color: #d0d0d0; }
-    
-    /* Filter pills */
-    .filter-btn { background: #fff; color: #666; font-weight: 500; border-radius: 100px; padding: 8px 16px; font-size: 13px; border: 1px solid #e8e8e8; transition: all 0.15s; }
-    .filter-btn:hover { color: #111; border-color: #d0d0d0; background: #f5f5f5; }
-    .filter-active { background: #CC0000 !important; color: #fff !important; border-color: #CC0000 !important; }
-    
-    /* Cart slide */
-    #cart-panel { transform: translateX(-100%); opacity: 0; transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease; }
-    #cart-panel.open { transform: translateX(0); opacity: 1; }
-    
-    /* Toast */
-    .toast-enter { animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    .toast-exit { animation: slideOutRight 0.3s ease forwards; }
-    @keyframes slideInRight { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
-    @keyframes slideOutRight { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100%); } }
-    
-    /* Pagination */
-    .page-btn { min-width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 13px; font-weight: 500; color: #666; border: 1px solid #e8e8e8; background: #fff; transition: all 0.15s; }
-    .page-btn:hover:not(.active):not(:disabled) { background: #f5f5f5; border-color: #d0d0d0; color: #111; }
-    .page-btn.active { background: #CC0000; color: #fff; border-color: #CC0000; }
-    .page-btn:disabled { color: #ccc; cursor: not-allowed; border-color: #eee; }
-    
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #ccc; }
-    
-    /* Pokéball canvas */
-    #pokeball-canvas { cursor: grab; }
-    #pokeball-canvas:active { cursor: grabbing; }
+    .pokeball-icon {
+      width: 18px; height: 18px; display: inline-block;
+      border-radius: 50%;
+      background: linear-gradient(to bottom, #CC0000 50%, #fff 50%);
+      border: 2px solid #1a1a1a;
+      position: relative; vertical-align: middle;
+    }
+    .pokeball-icon::before {
+      content: ''; position: absolute; top: 50%; left: 0; right: 0;
+      height: 2px; background: #1a1a1a; transform: translateY(-50%);
+    }
+    .pokeball-icon::after {
+      content: ''; position: absolute; top: 50%; left: 50%;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #fff; border: 2px solid #1a1a1a;
+      transform: translate(-50%, -50%);
+    }
+    .pokeball-lg {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: linear-gradient(to bottom, #CC0000 50%, #fff 50%);
+      border: 3px solid #1a1a1a; position: relative;
+    }
+    .pokeball-lg::before {
+      content: ''; position: absolute; top: 50%; left: 0; right: 0;
+      height: 3px; background: #1a1a1a; transform: translateY(-50%);
+    }
+    .pokeball-lg::after {
+      content: ''; position: absolute; top: 50%; left: 50%;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: #fff; border: 3px solid #1a1a1a;
+      transform: translate(-50%, -50%);
+    }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+    .filter-active { background-color: #CC0000; color: white; }
   </style>
 </head>
-<body>
+<body class="font-sans bg-white text-poke-black antialiased">
 
   <!-- Toast Container -->
-  <div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-2"></div>
+  <div id="toast-container" class="fixed top-20 right-6 z-[100] flex flex-col gap-3"></div>
+
+  <style>
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+    .toast-enter { animation: slideIn 0.3s ease-out; }
+    .toast-exit { animation: slideOut 0.3s ease-in; }
+  </style>
 
   <!-- Navbar -->
-  <nav class="bg-white border-b border-border sticky top-0 z-50">
+  <nav class="border-b border-poke-line sticky top-0 bg-white z-50">
     <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <img src="/logo.jpg" alt="Logo" class="h-8 w-auto">
+        <img src="/logo.jpg" alt="Campt's Collection" class="h-10 w-auto">
       </div>
-      <div class="flex items-center gap-3">
-        <button id="cart-btn" class="relative p-2 text-text-secondary hover:text-text-primary transition">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"></path></svg>
-          <span id="cart-count" class="absolute -top-0.5 -right-0.5 bg-accent text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
+      <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
+        <a href="#" class="hover:text-poke-red transition">The Vault</a>
+        <a href="#" class="hover:text-poke-red transition">Active Orders</a>
+        <a href="#" class="hover:text-poke-red transition">FAQ</a>
+        <a href="/admin.html" id="nav-dashboard" class="hover:text-poke-red transition hidden">Dashboard</a>
+      </div>
+      <div class="flex items-center gap-4">
+        <button id="cart-btn" class="relative text-sm text-gray-500 hover:text-poke-red transition">
+          🛒 Cart (<span id="cart-count">0</span>)
         </button>
-        <div id="auth-links" class="flex items-center gap-3">
-          <a href="/login.html" class="btn-secondary">Login</a>
+        <a href="/login.html" id="nav-login" class="px-4 py-2 bg-poke-red text-white text-sm font-semibold rounded-lg hover:bg-poke-darkred transition">Login</a>
+        <div id="nav-avatar" class="hidden flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-poke-gray flex items-center justify-center text-sm font-semibold">A</div>
+          <button id="logout-btn" class="text-xs text-gray-400 hover:text-poke-red transition">Logout</button>
         </div>
       </div>
     </div>
   </nav>
 
-  <!-- Cart Panel -->
-  <div id="cart-overlay" class="hidden fixed inset-0 bg-black/20 z-50" onclick="closeCart()"></div>
-  <div id="cart-panel" class="fixed top-0 left-0 h-full w-full max-w-sm bg-white shadow-modal z-50 flex flex-col">
-    <div class="px-5 py-4 border-b border-border flex items-center justify-between">
-      <h2 class="font-semibold text-base">Your Cart</h2>
-      <button id="close-cart" class="p-1 text-text-tertiary hover:text-text-primary transition">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-      </button>
-    </div>
-    <div id="cart-items" class="p-5 overflow-y-auto flex-1">
-      <p class="text-text-tertiary text-center py-12 text-sm">Your cart is empty</p>
-    </div>
-    <div class="border-t border-border p-5">
-      <div class="flex justify-between mb-4">
-        <span class="text-text-secondary text-sm">Total</span>
-        <span id="cart-total" class="font-semibold text-base text-text-primary">Rp0</span>
+  <!-- Cart Slide Panel -->
+  <div id="cart-modal" class="hidden fixed inset-0 bg-black/50 z-50">
+    <div id="cart-panel" class="absolute left-0 top-0 h-full w-full max-w-md bg-white shadow-xl transform -translate-x-full transition-transform duration-300">
+      <div class="flex items-center justify-between p-4 border-b border-poke-line">
+        <h3 class="font-bold text-lg">Your Cart</h3>
+        <button id="close-cart" class="text-gray-400 hover:text-poke-red text-xl">&times;</button>
       </div>
-      <button onclick="window.location.href='/checkout.html'" class="w-full btn-primary">Checkout</button>
+      <div id="cart-items" class="p-4 overflow-y-auto" style="height: calc(100vh - 180px);">
+        <p class="text-gray-400 text-center py-8">Cart is empty</p>
+      </div>
+      <div class="border-t border-poke-line p-4">
+        <div class="flex justify-between mb-4">
+          <span class="font-semibold">Total:</span>
+          <span id="cart-total" class="font-bold text-poke-red">Rp0</span>
+        </div>
+        <button onclick="window.location.href='/checkout.html'" class="w-full py-3 bg-poke-red text-white font-semibold rounded-lg hover:bg-poke-darkred transition text-sm">
+          Checkout
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- Item Preview Modal -->
-  <div id="preview-modal" class="hidden fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4" onclick="if(event.target===this)closePreview()">
-    <div class="bg-white rounded-xl shadow-modal max-w-4xl w-full overflow-hidden animate-scale-in">
-      <button id="close-preview" class="absolute top-4 right-4 text-text-tertiary hover:text-text-primary transition p-1 z-10">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-      </button>
+  <div id="preview-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-4xl w-full overflow-hidden">
+      <button id="close-preview" class="absolute top-4 right-4 text-gray-400 hover:text-poke-red text-2xl z-10">&times;</button>
       <div class="grid md:grid-cols-2">
-        <div class="bg-bg-secondary p-8 flex items-center justify-center aspect-[3/4]">
-          <img id="preview-image" class="w-full h-full object-contain hidden">
-          <div id="preview-placeholder" class="text-8xl text-text-tertiary"></div>
+        <!-- Left: Card Image -->
+        <div class="bg-poke-gray flex items-center justify-center overflow-hidden p-8" style="aspect-ratio: 3/4;">
+          <img id="preview-image" src="" alt="" class="w-full h-full object-contain hidden rounded-lg">
+          <span id="preview-emoji" class="text-9xl">🃏</span>
         </div>
+        <!-- Right: Description -->
         <div class="p-8 flex flex-col justify-between">
           <div>
-            <div class="flex items-center gap-2 mb-3">
-              <span id="preview-grading" class="hidden px-2.5 py-1 bg-amber-50 text-amber-700 text-xs font-semibold rounded-md"></span>
-              <span id="preview-origin" class="text-xs text-text-tertiary font-medium"></span>
+            <div id="preview-grading-wrap" class="hidden mb-3">
+              <span id="preview-grading" class="inline-block px-3 py-1 bg-poke-red text-white text-xs font-bold rounded-full uppercase tracking-wider"></span>
             </div>
-            <h2 id="preview-name" class="text-xl font-semibold mb-1"></h2>
-            <p id="preview-category" class="text-sm text-text-secondary mb-4"></p>
-            <p id="preview-price" class="text-lg font-semibold text-text-primary mb-6"></p>
-            <p id="preview-description" class="text-sm text-text-secondary leading-relaxed mb-6"></p>
+            <h2 id="preview-name" class="text-3xl font-bold mb-2"></h2>
+            <p id="preview-category" class="text-sm text-gray-400 mb-4"></p>
+            <p id="preview-price" class="text-2xl font-bold text-green-600 mb-6"></p>
+            <div class="border-t border-poke-line pt-4">
+              <p id="preview-desc" class="text-sm text-gray-500 leading-relaxed"></p>
+            </div>
           </div>
-          <button id="preview-add-btn" class="btn-primary w-full">Add to Cart</button>
+          <button id="preview-add-cart" class="w-full py-3.5 bg-poke-red text-white font-semibold rounded-lg hover:bg-poke-darkred transition text-sm mt-6">
+            Add to Cart
+          </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Hero Section -->
-  <section class="bg-white border-b border-border">
-    <div class="max-w-7xl mx-auto px-6 py-16 md:py-20">
-      <div class="flex flex-col md:flex-row items-center gap-12">
-        <div class="flex-1 animate-slide-up">
-          <p class="text-sm text-text-secondary mb-3 font-medium">Directly from Japan</p>
-          <h1 class="text-4xl md:text-5xl font-semibold text-text-primary leading-tight mb-4">Campt's Collection</h1>
-          <p class="text-text-secondary text-lg mb-8 leading-relaxed">Curated Pokémon TCG cards — graded, sealed, and ready for your collection.</p>
-          <a href="#gallery" class="btn-primary inline-flex items-center gap-2">
-            Browse Collection
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-          </a>
+  <!-- Hero -->
+  <section class="max-w-7xl mx-auto px-6 py-16 md:py-24">
+    <div class="grid md:grid-cols-2 gap-12 items-center">
+      <div>
+        <div class="flex items-center gap-2 text-sm font-semibold text-poke-red uppercase tracking-wider mb-4">
+          <div class="pokeball-icon"></div>
+          Directly from Japan
         </div>
-        <div class="w-72 h-72 md:w-96 md:h-96 flex-shrink-0">
-          <canvas id="pokeball-canvas" width="500" height="500" class="w-full h-full"></canvas>
-        </div>
+        <h1 class="text-4xl md:text-5xl font-bold leading-tight">
+          Secure Your Dream Grails.<br>Before They Vanish.
+        </h1>
+      </div>
+
+      <!-- 3D Pixel Pokéball -->
+      <div class="flex flex-col items-center justify-center -ml-8">
+        <canvas id="pokeball-canvas" width="500" height="500"></canvas>
       </div>
     </div>
   </section>
 
-  <!-- Gallery Section -->
-  <section id="gallery" class="max-w-7xl mx-auto px-6 py-12">
-    <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-      <h2 class="text-2xl font-semibold">The Gallery</h2>
-      <div class="relative">
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-        <input type="text" id="search-input" placeholder="Search cards..."
-               class="w-full md:w-72 pl-10 pr-4 py-2.5 border border-border rounded-lg focus:border-accent focus:outline-none text-sm bg-white transition">
-      </div>
+  <!-- Divider -->
+  <div class="border-t border-poke-line"></div>
+
+  <!-- Gallery -->
+  <section class="max-w-7xl mx-auto px-6 py-16">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+      <h2 class="text-2xl font-bold">The Gallery</h2>
+      <input type="text" id="search-input" placeholder="Search Grails..."
+             class="w-full md:w-72 px-4 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
     </div>
 
     <!-- Filters -->
-    <div id="filters" class="flex gap-2 overflow-x-auto pb-4 mb-8">
-      <button data-category="" class="filter-btn filter-active">All</button>
+    <div id="filters" class="flex gap-2 overflow-x-auto pb-4 mb-8 border-b border-poke-line">
+      <button data-category="" class="filter-btn px-4 py-2 bg-poke-red text-white text-sm font-medium rounded-full whitespace-nowrap transition">All Drops</button>
     </div>
 
     <!-- Cards Grid -->
-    <div id="cards-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <div id="cards-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <!-- Cards loaded dynamically from API -->
     </div>
 
     <!-- Pagination -->
-    <div id="pagination" class="flex items-center justify-end gap-1.5 mt-10 hidden">
+    <div id="pagination" class="flex items-center justify-end gap-1 mt-8 mb-4 hidden">
     </div>
 
-    <!-- Empty State -->
-    <div id="empty-gallery" class="hidden text-center py-16">
-      <svg class="w-12 h-12 text-text-tertiary mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-      <p class="text-text-secondary text-sm">No cards found</p>
-      <p class="text-text-tertiary text-xs mt-1">Try a different search or filter</p>
+    <div id="loading" class="text-center py-12 text-gray-400">
+      <p>Loading cards...</p>
     </div>
 
-    <!-- Loading -->
-    <div id="loading" class="text-center py-16">
-      <div class="inline-block w-6 h-6 border-2 border-text-tertiary border-t-accent rounded-full animate-spin"></div>
-      <p class="text-text-tertiary text-sm mt-3">Loading collection...</p>
+    <div id="empty-gallery" class="hidden text-center py-12 text-gray-400">
+      <p class="text-lg mb-2">No cards found</p>
+      <p class="text-sm">Check back later or try a different filter</p>
     </div>
   </section>
 
   <!-- Footer -->
-  <footer class="border-t border-border bg-white mt-16">
-    <div class="max-w-7xl mx-auto px-6 py-10">
-      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-        <div class="flex items-center gap-2">
-          <img src="/logo.jpg" alt="Logo" class="h-5 w-auto opacity-60">
-          <span class="text-xs text-text-tertiary font-medium">CAMPT'S COLLECTION</span>
+  <footer class="border-t border-poke-line bg-poke-gray">
+    <div class="max-w-7xl mx-auto px-6 py-12">
+      <div class="grid md:grid-cols-3 gap-8">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <div class="pokeball-icon"></div>
+            <span class="font-bold text-sm">CAMPT'S COLLECTION</span>
+          </div>
+          <p class="text-sm text-gray-500">Indonesia's premier vault for elite Pokémon TCG collections.</p>
         </div>
-        <p class="text-xs text-text-tertiary">Indonesia's premier vault for elite Pokémon TCG collections.</p>
+        <div>
+          <h4 class="font-semibold text-sm mb-3">Marketplaces</h4>
+          <ul class="space-y-2 text-sm text-gray-500"><li>Mercari Japan</li><li>SNKRDUNK</li><li>Yahoo Auctions</li></ul>
+        </div>
+        <div>
+          <h4 class="font-semibold text-sm mb-3">Support</h4>
+          <ul class="space-y-2 text-sm text-gray-500"><li>FAQ</li><li>Contact</li><li>Terms & Conditions</li></ul>
+        </div>
+      </div>
+      <div class="border-t border-poke-line mt-8 pt-8 text-center text-xs text-gray-400">
+        © 2026 Campt's Collection. Not affiliated with The Pokémon Company.
       </div>
     </div>
   </footer>
-
-  <!-- Floating WhatsApp -->
-  <a href="https://wa.me/628XXXXXXXXXX?text=Halo! Mau tanya tentang koleksi Pokemon TCG" target="_blank"
-     class="fixed bottom-6 right-6 z-40 w-12 h-12 bg-green-500 rounded-full flex items-center justify-center shadow-lg hover:bg-green-600 hover:scale-105 transition-all group">
-    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-    <span class="absolute right-14 bg-white text-text-primary text-xs font-medium px-3 py-1.5 rounded-lg shadow-card opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Chat via WhatsApp</span>
-  </a>
 
   <script>
     const API_BASE = window.location.origin;
@@ -248,140 +232,200 @@
     let currentCategory = '';
     let currentPage = 1;
     const ITEMS_PER_PAGE = 16;
-    let cart = JSON.parse(localStorage.getItem('campt_cart') || '[]');
 
-    // Check admin auth
+    // Check if admin is logged in
     function checkAdminAuth() {
       const token = localStorage.getItem('campt_token');
-      const user = JSON.parse(localStorage.getItem('campt_user') || '{}');
-      const authDiv = document.getElementById('auth-links');
-      if (token && user.role === 'admin') {
-        authDiv.innerHTML = `
-          <div class="flex items-center gap-2">
-            <a href="/admin.html" class="text-sm font-medium text-text-secondary hover:text-text-primary transition">Dashboard</a>
-            <div class="w-8 h-8 bg-accent text-white rounded-full flex items-center justify-center text-xs font-semibold cursor-pointer" onclick="window.location.href='/admin.html'">${(user.username || 'A')[0].toUpperCase()}</div>
-            <button onclick="logout()" class="text-xs text-text-tertiary hover:text-text-primary transition">Logout</button>
-          </div>`;
-      } else {
-        authDiv.innerHTML = `<a href="/login.html" class="btn-secondary text-sm">Login</a>`;
+      if (token) {
+        document.getElementById('nav-login').classList.add('hidden');
+        document.getElementById('nav-avatar').classList.remove('hidden');
+        document.getElementById('nav-dashboard').classList.remove('hidden');
       }
     }
+    checkAdminAuth();
 
-    function logout() {
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', () => {
       localStorage.removeItem('campt_token');
-      localStorage.removeItem('campt_user');
       window.location.reload();
-    }
-
-    // Toast
-    function showToast(message, type = 'info') {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      const colors = { success: 'border-green-500', error: 'border-red-500', info: 'border-blue-500' };
-      const icons = {
-        success: '<svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>',
-        error: '<svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>',
-        info: '<svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
-      };
-      toast.className = `toast-enter flex items-center gap-3 bg-white px-4 py-3 rounded-lg shadow-toast border-l-4 ${colors[type]} min-w-[280px]`;
-      toast.innerHTML = `${icons[type]}<span class="text-sm font-medium text-text-primary">${message}</span>`;
-      container.appendChild(toast);
-      setTimeout(() => { toast.classList.add('toast-exit'); setTimeout(() => toast.remove(), 300); }, 2500);
-    }
+    });
 
     // Cart
-    function renderCart() {
-      const cartItems = document.getElementById('cart-items');
-      const cartTotal = document.getElementById('cart-total');
-      const cartCount = document.getElementById('cart-count');
+    let cart = JSON.parse(localStorage.getItem('campt_cart') || '[]');
 
-      if (cart.length === 0) {
-        cartItems.innerHTML = '<p class="text-text-tertiary text-center py-12 text-sm">Your cart is empty</p>';
-        cartCount.classList.add('hidden');
-      } else {
-        cartCount.classList.remove('hidden');
-        cartCount.textContent = cart.reduce((sum, i) => sum + i.qty, 0);
-        cartItems.innerHTML = cart.map((item, idx) => `
-          <div class="flex items-center gap-4 py-3 animate-fade-in">
-            <div class="w-14 h-14 rounded-lg bg-bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
-              ${item.image_url ? `<img src="${item.image_url}" class="w-full h-full object-cover">` : '<span class="text-lg text-text-tertiary">🃏</span>'}
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-text-primary truncate">${item.name}</p>
-              <p class="text-xs text-text-secondary">${item.price}</p>
-            </div>
-            <button onclick="removeFromCart(${idx})" class="p-1 text-text-tertiary hover:text-red-500 transition">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-          </div>
-        `).join('');
-      }
-
-      const total = cart.reduce((sum, i) => sum + (parseInt(i.price.replace(/[^0-9]/g, '')) || 0) * i.qty, 0);
-      cartTotal.textContent = `Rp${total.toLocaleString()}`;
+    function updateCart() {
+      document.getElementById('cart-count').textContent = cart.length;
       localStorage.setItem('campt_cart', JSON.stringify(cart));
     }
+    updateCart();
 
-    function addToCart(card) {
-      const existing = cart.find(i => i.id === card.id);
-      if (existing) {
-        existing.qty++;
-      } else {
-        cart.push({ id: card.id, name: card.name, price: card.price, image_url: card.image_url, qty: 1 });
-      }
-      renderCart();
-      showToast(`${card.name} added to cart`, 'success');
+    function addToCart(item) {
+      cart.push(item);
+      updateCart();
+      showToast(`"${item.name}" added to cart!`, 'success');
     }
 
-    function removeFromCart(idx) {
-      cart.splice(idx, 1);
-      renderCart();
-    }
+    // Preview modal
+    let currentPreviewItem = null;
 
-    function openCart() {
-      document.getElementById('cart-overlay').classList.remove('hidden');
-      document.getElementById('cart-panel').classList.add('open');
-    }
-    function closeCart() {
-      document.getElementById('cart-overlay').classList.add('hidden');
-      document.getElementById('cart-panel').classList.remove('open');
-    }
-    document.getElementById('cart-btn').addEventListener('click', openCart);
-    document.getElementById('close-cart').addEventListener('click', closeCart);
-
-    // Preview
     function openPreview(card) {
-      const modal = document.getElementById('preview-modal');
-      const img = document.getElementById('preview-image');
-      const placeholder = document.getElementById('preview-placeholder');
-
+      currentPreviewItem = card;
       document.getElementById('preview-name').textContent = card.name;
       document.getElementById('preview-category').textContent = card.category;
       document.getElementById('preview-price').textContent = card.price;
-      document.getElementById('preview-description').textContent = card.description || 'No description available.';
-      document.getElementById('preview-origin').textContent = card.origin || 'JP';
+      document.getElementById('preview-desc').textContent = card.description || 'Premium Pokémon TCG card from Japan. Authentic and in excellent condition.';
 
-      const grading = document.getElementById('preview-grading');
-      if (card.grading) { grading.textContent = card.grading; grading.classList.remove('hidden'); }
-      else { grading.classList.add('hidden'); }
-
-      if (card.image_url) {
-        img.src = card.image_url;
-        img.classList.remove('hidden');
-        placeholder.classList.add('hidden');
+      // Grading
+      const gradingWrap = document.getElementById('preview-grading-wrap');
+      const gradingEl = document.getElementById('preview-grading');
+      if (card.grading) {
+        gradingEl.textContent = card.grading;
+        gradingWrap.classList.remove('hidden');
       } else {
-        img.classList.add('hidden');
-        placeholder.classList.remove('hidden');
-        placeholder.textContent = '🃏';
+        gradingWrap.classList.add('hidden');
       }
 
-      document.getElementById('preview-add-btn').onclick = () => { addToCart(card); closePreview(); };
-      modal.classList.remove('hidden');
-    }
-    function closePreview() { document.getElementById('preview-modal').classList.add('hidden'); }
-    document.getElementById('close-preview').addEventListener('click', closePreview);
+      if (card.image_url) {
+        document.getElementById('preview-image').src = card.image_url;
+        document.getElementById('preview-image').classList.remove('hidden');
+        document.getElementById('preview-emoji').classList.add('hidden');
+      } else {
+        document.getElementById('preview-image').classList.add('hidden');
+        document.getElementById('preview-emoji').textContent = getEmoji(card.category);
+        document.getElementById('preview-emoji').classList.remove('hidden');
+      }
 
-    // Categories
+      document.getElementById('preview-modal').classList.remove('hidden');
+    }
+
+    document.getElementById('preview-add-cart').addEventListener('click', () => {
+      if (currentPreviewItem) {
+        addToCart(currentPreviewItem);
+        document.getElementById('preview-modal').classList.add('hidden');
+      }
+    });
+
+    document.getElementById('close-preview').addEventListener('click', () => {
+      document.getElementById('preview-modal').classList.add('hidden');
+    });
+
+    document.getElementById('preview-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('preview-modal')) {
+        document.getElementById('preview-modal').classList.add('hidden');
+      }
+    });
+
+    // Cart modal
+    document.getElementById('cart-btn').addEventListener('click', () => {
+      const modal = document.getElementById('cart-modal');
+      const panel = document.getElementById('cart-panel');
+      const itemsDiv = document.getElementById('cart-items');
+      const totalSpan = document.getElementById('cart-total');
+
+      if (cart.length === 0) {
+        itemsDiv.innerHTML = '<p class="text-gray-400 text-center py-8">Cart is empty</p>';
+        totalSpan.textContent = 'Rp0';
+      } else {
+        let total = 0;
+        itemsDiv.innerHTML = cart.map((item, i) => {
+          const price = parseInt(item.price.replace(/[^0-9]/g, '')) || 0;
+          total += price;
+          return `
+            <div class="flex items-center justify-between py-3 ${i < cart.length - 1 ? 'border-b border-poke-line' : ''}">
+              <div>
+                <p class="font-medium text-sm">${item.name}</p>
+                <p class="text-xs text-gray-500">${item.category}</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="font-semibold text-sm">${item.price}</span>
+                <button onclick="removeFromCart(${i})" class="text-gray-400 hover:text-red-500 text-sm">&times;</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+        totalSpan.textContent = `Rp${total.toLocaleString()}`;
+      }
+
+      modal.classList.remove('hidden');
+      setTimeout(() => panel.classList.remove('-translate-x-full'), 10);
+    });
+
+    document.getElementById('close-cart').addEventListener('click', () => {
+      const modal = document.getElementById('cart-modal');
+      const panel = document.getElementById('cart-panel');
+      panel.classList.add('-translate-x-full');
+      setTimeout(() => modal.classList.add('hidden'), 300);
+    });
+
+    document.getElementById('cart-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('cart-modal')) {
+        const modal = document.getElementById('cart-modal');
+        const panel = document.getElementById('cart-panel');
+        panel.classList.add('-translate-x-full');
+        setTimeout(() => modal.classList.add('hidden'), 300);
+      }
+    });
+
+    function removeFromCart(index) {
+      cart.splice(index, 1);
+      updateCart();
+      document.getElementById('cart-btn').click();
+    }
+
+    function openWhatsApp() {
+      if (cart.length === 0) {
+        showToast('Cart is empty!', 'error');
+        return;
+      }
+      const items = cart.map(i => `- ${i.name} (${i.price})`).join('%0A');
+      const total = cart.reduce((sum, i) => sum + (parseInt(i.price.replace(/[^0-9]/g, '')) || 0), 0);
+      const msg = `Halo! Mau tanya tentang item ini:%0A${items}%0A%0ATotal: Rp${total.toLocaleString()}%0A%0AMasih available?`;
+      window.open(`https://wa.me/628XXXXXXXXXX?text=${msg}`, '_blank');
+    }
+
+    // Toast notification
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+
+      const icons = {
+        success: `<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`,
+        error: `<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`,
+        info: `<svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`
+      };
+
+      const borderColors = {
+        success: 'border-l-4 border-green-500',
+        error: 'border-l-4 border-red-500',
+        info: 'border-l-4 border-blue-500'
+      };
+
+      toast.className = `toast-enter flex items-center gap-3 bg-white px-5 py-4 rounded-lg shadow-xl ${borderColors[type]} min-w-[300px] max-w-[400px]`;
+      toast.innerHTML = `
+        ${icons[type]}
+        <span class="text-sm font-medium text-gray-800">${message}</span>
+      `;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.remove('toast-enter');
+        toast.classList.add('toast-exit');
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
+    }
+
+    // Emoji map for card categories
+    const emojiMap = {
+      'Holo / Reverse': '✨', 'EX / GX': '💎', 'V / VSTAR / VMAX': '⚡',
+      'Vintage / Modern': '📜', 'AR / CHR / SAR': '🎨', 'SR': '🌟',
+      'Slab': '🏆', 'Promo': '🎁', 'Booster Box': '📦', 'Legendary': '🌈',
+      'default': '🃏'
+    };
+
+    function getEmoji(category) { return emojiMap[category] || emojiMap['default']; }
+
+    // Load categories for filters
     async function loadCategories() {
       try {
         const res = await fetch(`${API_BASE}/api/categories?all=true`);
@@ -390,24 +434,28 @@
         categories.forEach(cat => {
           const btn = document.createElement('button');
           btn.dataset.category = cat.name;
-          btn.className = 'filter-btn';
+          btn.className = 'filter-btn px-4 py-2 text-gray-600 text-sm font-medium hover:text-poke-red whitespace-nowrap transition';
           btn.textContent = cat.name;
           filtersDiv.appendChild(btn);
         });
-      } catch (err) { console.error('Failed to load categories:', err); }
+      } catch (err) {
+        console.error('Failed to load categories:', err);
+      }
     }
 
-    // Cards
+    // Load cards from API
     async function loadCards() {
       try {
         const res = await fetch(`${API_BASE}/api/cards`);
         allCards = await res.json();
         renderCards(allCards);
       } catch (err) {
-        document.getElementById('loading').textContent = 'Failed to load cards.';
+        console.error('Failed to load cards:', err);
+        document.getElementById('loading').textContent = 'Failed to load cards. Is the server running?';
       }
     }
 
+    // Render cards
     function renderCards(cards) {
       const grid = document.getElementById('cards-grid');
       const loading = document.getElementById('loading');
@@ -443,23 +491,23 @@
       const pageCards = filtered.slice(start, start + ITEMS_PER_PAGE);
 
       grid.innerHTML = pageCards.map(card => `
-        <div class="product-card group animate-fade-in">
-          <div class="aspect-square bg-bg-secondary overflow-hidden cursor-pointer" onclick='openPreview(${JSON.stringify(card).replace(/'/g, "'")})'>
+        <div class="card-hover border border-poke-line rounded-xl overflow-hidden transition-all duration-200">
+          <div class="aspect-square bg-poke-gray flex items-center justify-center text-5xl overflow-hidden">
             ${card.image_url
-              ? `<img src="${card.image_url}" alt="${card.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">`
-              : `<div class="w-full h-full flex items-center justify-center text-4xl text-text-tertiary">🃏</div>`
+              ? `<img src="${card.image_url}" alt="${card.name}" class="w-full h-full object-cover">`
+              : getEmoji(card.category)
             }
           </div>
           <div class="p-4">
             <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-medium text-accent uppercase tracking-wide">${card.category}</span>
-              <span class="text-xs text-text-tertiary">${card.origin || 'JP'}</span>
+              <span class="text-xs font-semibold text-poke-red uppercase tracking-wider">${card.category}</span>
+              <span class="text-xs text-gray-400">${card.origin || 'JP'}</span>
             </div>
-            <h3 class="font-semibold text-sm mb-1 text-text-primary truncate">${card.name}</h3>
-            <p class="text-sm text-text-secondary mb-3">${card.price}</p>
+            <h3 class="font-semibold text-base mb-1">${card.name}</h3>
+            <p class="text-sm text-gray-500 mb-4">${card.price}</p>
             ${card.status === 'sold'
-              ? `<button class="w-full py-2.5 bg-bg-tertiary text-text-tertiary text-sm font-medium rounded-lg cursor-not-allowed">Sold Out</button>`
-              : `<button onclick='addToCart(${JSON.stringify(card).replace(/'/g, "'")})' class="w-full btn-secondary text-sm">Add to Cart</button>`
+              ? `<button class="w-full py-2.5 bg-gray-200 text-gray-400 text-sm font-semibold rounded-lg cursor-not-allowed">Sold Out</button>`
+              : `<button onclick='openPreview(${JSON.stringify(card).replace(/'/g, "'")})' class="w-full py-2.5 bg-poke-red text-white text-sm font-semibold rounded-lg hover:bg-poke-darkred transition">View Details</button>`
             }
           </div>
         </div>
@@ -475,17 +523,17 @@
       pagination.classList.remove('hidden');
 
       let html = '';
-      html += `<button onclick="goToPage(${currentPage - 1})" class="page-btn" ${currentPage === 1 ? 'disabled' : ''}>
+      html += `<button onclick="goToPage(${currentPage - 1})" class="px-3 py-1.5 text-sm rounded-lg border ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-poke-red hover:text-white hover:border-poke-red'} transition" ${currentPage === 1 ? 'disabled' : ''}>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
       </button>`;
 
       const pages = getPageNumbers(currentPage, totalPages);
       pages.forEach(p => {
-        if (p === '...') html += `<span class="px-1 text-text-tertiary text-sm">…</span>`;
-        else html += `<button onclick="goToPage(${p})" class="page-btn ${p === currentPage ? 'active' : ''}">${p}</button>`;
+        if (p === '...') html += `<span class="px-2 py-1.5 text-sm text-gray-400">...</span>`;
+        else html += `<button onclick="goToPage(${p})" class="px-3 py-1.5 text-sm rounded-lg border transition ${p === currentPage ? 'bg-poke-red text-white border-poke-red' : 'text-gray-600 hover:bg-poke-red hover:text-white hover:border-poke-red'}">${p}</button>`;
       });
 
-      html += `<button onclick="goToPage(${currentPage + 1})" class="page-btn" ${currentPage === totalPages ? 'disabled' : ''}>
+      html += `<button onclick="goToPage(${currentPage + 1})" class="px-3 py-1.5 text-sm rounded-lg border ${currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-poke-red hover:text-white hover:border-poke-red'} transition" ${currentPage === totalPages ? 'disabled' : ''}>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
       </button>`;
 
@@ -504,7 +552,7 @@
       if (page < 1 || page > totalPages) return;
       currentPage = page;
       renderCards(allCards);
-      document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' });
+      document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' });
     }
 
     function getFilteredCount() {
@@ -517,21 +565,29 @@
       return filtered.length;
     }
 
+
     // Filter buttons
     document.getElementById('filters').addEventListener('click', (e) => {
       const btn = e.target.closest('.filter-btn');
       if (!btn) return;
       currentCategory = btn.dataset.category;
       currentPage = 1;
-      document.querySelectorAll('.filter-btn').forEach(b => { b.classList.remove('filter-active'); });
-      btn.classList.add('filter-active');
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.classList.remove('bg-poke-red', 'text-white');
+        b.classList.add('text-gray-600');
+      });
+      btn.classList.add('bg-poke-red', 'text-white');
+      btn.classList.remove('text-gray-600');
       renderCards(allCards);
     });
 
     // Search
-    document.getElementById('search-input').addEventListener('input', () => { currentPage = 1; renderCards(allCards); });
+    document.getElementById('search-input').addEventListener('input', () => {
+      currentPage = 1;
+      renderCards(allCards);
+    });
 
-    // Pokéball
+    // ==================== 3D POKÉBALL ====================
     const canvas = document.getElementById('pokeball-canvas');
     const ctx = canvas.getContext('2d');
     const W = canvas.width, H = canvas.height;
@@ -544,65 +600,98 @@
     let lastMouse = { x: 0, y: 0 };
     let resumeTimer = null;
 
-    function rotateX(point, angle) {
-      const cos = Math.cos(angle), sin = Math.sin(angle);
-      return [point[0], point[1] * cos - point[2] * sin, point[1] * sin + point[2] * cos];
-    }
-    function rotateY(point, angle) {
-      const cos = Math.cos(angle), sin = Math.sin(angle);
-      return [point[0] * cos + point[2] * sin, point[1], -point[0] * sin + point[2] * cos];
-    }
+    function getPokeballColor(nx, ny, nz) {
+      const bandWidth = 0.06;
+      const buttonRadius = 0.18;
+      const distToCenter = Math.sqrt(nx * nx + (ny * ny) * 4);
 
-    function drawPokeball() {
-      ctx.clearRect(0, 0, W, H);
-      const points = [];
-      for (let i = 0; i < 360; i += PIXEL_SIZE) {
-        const phi = (i * Math.PI) / 180;
-        for (let j = -90; j <= 90; j += PIXEL_SIZE) {
-          const theta = (j * Math.PI) / 180;
-          let x = RADIUS * Math.cos(theta) * Math.cos(phi);
-          let y = RADIUS * Math.cos(theta) * Math.sin(phi);
-          let z = RADIUS * Math.sin(theta);
-          let rotated = rotateX([x, y, z], rotX);
-          rotated = rotateY(rotated, rotY);
-          points.push({ ...{ px: CX + rotated[0], py: CY + rotated[1], pz: rotated[2], phi, theta, z: rotated[2] } });
-        }
+      if (Math.abs(ny) < bandWidth && nz > 0) {
+        if (distToCenter < buttonRadius * 0.6) return { r: 255, g: 255, b: 255 };
+        return { r: 26, g: 26, b: 26 };
       }
-      points.sort((a, b) => a.z - b.z);
-      points.forEach(p => {
-        const brightness = 0.5 + (0.5 * (p.z + RADIUS)) / (2 * RADIUS);
-        const isUpper = p.phi < Math.PI;
-        const isEquator = Math.abs(p.phi - Math.PI) < (PIXEL_SIZE * Math.PI / 180) * 3;
-        const isButton = Math.abs(p.theta) < 0.15 && Math.abs(p.phi - Math.PI) < 0.25;
+      if (ny < -bandWidth) {
+        const light = 0.5 + 0.5 * Math.max(0, -ny * 0.5 + nz * 0.5);
+        return { r: Math.round(220 * light), g: Math.round(20 * light), b: Math.round(20 * light) };
+      }
+      if (ny > bandWidth) {
+        const light = 0.5 + 0.5 * Math.max(0, ny * 0.3 + nz * 0.7);
+        return { r: Math.round(245 * light), g: Math.round(245 * light), b: Math.round(250 * light) };
+      }
+      return { r: 100, g: 100, b: 100 };
+    }
 
-        if (isEquator) { ctx.fillStyle = '#1a1a1a'; }
-        else if (isButton) { ctx.fillStyle = '#ffffff'; }
-        else if (isUpper) { ctx.fillStyle = `rgb(${Math.floor(220 * brightness)}, ${Math.floor(20 * brightness)}, ${Math.floor(20 * brightness)})`; }
-        else { ctx.fillStyle = `rgb(${Math.floor(255 * brightness)}, ${Math.floor(255 * brightness)}, ${Math.floor(255 * brightness)})`; }
-        ctx.fillRect(p.px, p.py, PIXEL_SIZE, PIXEL_SIZE);
-      });
+    function rotateY(x, y, z, a) {
+      const c = Math.cos(a), s = Math.sin(a);
+      return { x: x * c + z * s, y, z: -x * s + z * c };
+    }
+    function rotateX(x, y, z, a) {
+      const c = Math.cos(a), s = Math.sin(a);
+      return { x, y: y * c - z * s, z: y * s + z * c };
+    }
 
-      // Shadow
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
       ctx.save();
       ctx.beginPath();
-      ctx.ellipse(CX, CY + RADIUS + 20, RADIUS * 0.6, 15, 0, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(0,0,0,0.06)';
+      ctx.ellipse(CX, CY + RADIUS + 30, RADIUS * 0.7, 15, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';
       ctx.fill();
       ctx.restore();
 
-      if (!isDragging) rotY -= 0.005;
-      requestAnimationFrame(drawPokeball);
+      for (let px = -RADIUS; px < RADIUS; px += PIXEL_SIZE) {
+        for (let py = -RADIUS; py < RADIUS; py += PIXEL_SIZE) {
+          if (Math.sqrt(px * px + py * py) > RADIUS) continue;
+          const z = Math.sqrt(RADIUS * RADIUS - px * px - py * py);
+          const nx = px / RADIUS, ny = py / RADIUS, nz = z / RADIUS;
+          let p = rotateY(nx, ny, nz, rotY);
+          p = rotateX(p.x, p.y, p.z, rotX);
+          const color = getPokeballColor(p.x, p.y, p.z);
+          const brightness = 0.6 + 0.4 * nz;
+          ctx.fillStyle = `rgb(${Math.round(color.r * brightness)},${Math.round(color.g * brightness)},${Math.round(color.b * brightness)})`;
+          ctx.fillRect(CX + px, CY + py, PIXEL_SIZE - 1, PIXEL_SIZE - 1);
+        }
+      }
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(CX - RADIUS * 0.3, CY - RADIUS * 0.35, RADIUS * 0.15, RADIUS * 0.1, -0.4, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.25)';
+      ctx.fill();
+      ctx.restore();
     }
 
-    canvas.addEventListener('mousedown', e => { isDragging = true; lastMouse = { x: e.clientX, y: e.clientY }; if (resumeTimer) clearTimeout(resumeTimer); });
-    window.addEventListener('mousemove', e => { if (!isDragging) return; const dx = e.clientX - lastMouse.x; rotY += dx * 0.01; lastMouse = { x: e.clientX, y: e.clientY }; });
-    window.addEventListener('mouseup', () => { if (!isDragging) return; isDragging = false; resumeTimer = setTimeout(() => {}, 2000); });
+    canvas.addEventListener('mousedown', (e) => { isDragging = true; if (resumeTimer) clearTimeout(resumeTimer); lastMouse = { x: e.clientX, y: e.clientY }; });
+    window.addEventListener('mousemove', (e) => { if (!isDragging) return; rotY += (e.clientX - lastMouse.x) * 0.01; rotX += (e.clientY - lastMouse.y) * 0.01; lastMouse = { x: e.clientX, y: e.clientY }; draw(); });
+    window.addEventListener('mouseup', () => { isDragging = false; resumeTimer = setTimeout(() => { resumeTimer = null; }, 2000); });
+    canvas.addEventListener('touchstart', (e) => { isDragging = true; if (resumeTimer) clearTimeout(resumeTimer); lastMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY }; });
+    window.addEventListener('touchmove', (e) => { if (!isDragging) return; rotY += (e.touches[0].clientX - lastMouse.x) * 0.01; rotX += (e.touches[0].clientY - lastMouse.y) * 0.01; lastMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY }; draw(); });
+    window.addEventListener('touchend', () => { isDragging = false; resumeTimer = setTimeout(() => { resumeTimer = null; }, 2000); });
+
+    function animate() {
+      if (!isDragging && !resumeTimer) { rotY -= 0.005; }
+      draw();
+      requestAnimationFrame(animate);
+    }
+    draw();
+    animate();
 
     // Init
-    checkAdminAuth();
-    renderCart();
-    loadCategories().then(() => loadCards());
-    drawPokeball();
+    loadCategories();
+    loadCards();
   </script>
+
+  <!-- Floating WhatsApp Button -->
+  <a href="https://wa.me/628XXXXXXXXXX?text=Halo! Mau tanya tentang koleksi Pokemon TCG" target="_blank"
+     class="fixed bottom-6 right-6 z-50 group">
+    <div class="bg-green-500 hover:bg-green-600 text-white rounded-full p-4 shadow-lg transition-all hover:scale-110">
+      <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+    </div>
+    <span class="absolute right-16 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+      Chat via WhatsApp
+    </span>
+  </a>
+
 </body>
 </html>
