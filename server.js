@@ -173,7 +173,7 @@ app.post('/api/admin/categories', authenticateToken, (req, res) => {
   
   try {
     const result = db.prepare('INSERT INTO categories (name) VALUES (?)').run(name);
-    const category = db.prepare('SELECT * FROM categories WHERE id = ?').get(result.lastInsertRowid);
+    const category = db.prepare('SELECT * FROM categories WHERE id = ?').get(Number(result.lastInsertRowid));
     res.json(category);
   } catch (err) {
     if (err.message.includes('UNIQUE')) return res.status(400).json({ error: 'Category already exists' });
@@ -294,7 +294,7 @@ app.post('/api/admin/cards', authenticateToken, upload.single('image'), (req, re
     'INSERT INTO cards (name, category, price, set_name, image_url, origin, status) VALUES (?, ?, ?, ?, ?, ?, ?)'
   ).run(name, category, price, set_name || '', image_url, origin || 'JP', status || 'active');
 
-  const card = db.prepare('SELECT * FROM cards WHERE id = ?').get(result.lastInsertRowid);
+  const card = db.prepare('SELECT * FROM cards WHERE id = ?').get(Number(result.lastInsertRowid));
   res.status(201).json(card);
 });
 
