@@ -132,7 +132,19 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
 
 // ========== CATEGORY ROUTES ==========
 app.get('/api/categories', (req, res) => {
-  const categories = db.prepare('SELECT * FROM categories ORDER BY name').all();
+  const { all } = req.query;
+  let categories;
+  if (all === 'true') {
+    categories = db.prepare('SELECT * FROM categories ORDER BY name').all();
+  } else {
+    // Only return categories that have active cards
+    categories = db.prepare(`
+      SELECT DISTINCT c.* FROM categories c
+      INNER JOIN cards ON cards.category = c.name
+      WHERE cards.status = 'active'
+      ORDER BY c.name
+    `).all();
+  }
   res.json(categories);
 });
 
