@@ -70,12 +70,39 @@
         <a href="/admin.html" id="nav-dashboard" class="hover:text-poke-red transition hidden">Dashboard</a>
       </div>
       <div class="flex items-center gap-4">
-        <span class="text-sm text-gray-500">Cart (0)</span>
+        <button id="cart-btn" class="relative text-sm text-gray-500 hover:text-poke-red transition">
+          🛒 Cart (<span id="cart-count">0</span>)
+        </button>
         <a href="/login.html" id="nav-login" class="px-4 py-2 bg-poke-red text-white text-sm font-semibold rounded-lg hover:bg-poke-darkred transition">Login</a>
-        <div id="nav-avatar" class="w-8 h-8 rounded-full bg-poke-gray flex items-center justify-center text-sm font-semibold hidden">A</div>
+        <div id="nav-avatar" class="hidden flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-poke-gray flex items-center justify-center text-sm font-semibold">A</div>
+          <button id="logout-btn" class="text-xs text-gray-400 hover:text-poke-red transition">Logout</button>
+        </div>
       </div>
     </div>
   </nav>
+
+  <!-- Cart Modal -->
+  <div id="cart-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden">
+      <div class="flex items-center justify-between p-4 border-b border-poke-line">
+        <h3 class="font-bold text-lg">Your Cart</h3>
+        <button id="close-cart" class="text-gray-400 hover:text-poke-red text-xl">&times;</button>
+      </div>
+      <div id="cart-items" class="p-4 overflow-y-auto max-h-[50vh]">
+        <p class="text-gray-400 text-center py-8">Cart is empty</p>
+      </div>
+      <div class="border-t border-poke-line p-4">
+        <div class="flex justify-between mb-4">
+          <span class="font-semibold">Total:</span>
+          <span id="cart-total" class="font-bold text-poke-red">¥0</span>
+        </div>
+        <button class="w-full py-3 bg-poke-red text-white font-semibold rounded-lg hover:bg-poke-darkred transition text-sm">
+          Checkout
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Hero -->
   <section class="max-w-7xl mx-auto px-6 py-16 md:py-24">
@@ -179,6 +206,76 @@
     }
     checkAdminAuth();
 
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      localStorage.removeItem('campt_token');
+      window.location.reload();
+    });
+
+    // Cart
+    let cart = JSON.parse(localStorage.getItem('campt_cart') || '[]');
+
+    function updateCart() {
+      document.getElementById('cart-count').textContent = cart.length;
+      localStorage.setItem('campt_cart', JSON.stringify(cart));
+    }
+    updateCart();
+
+    function addToCart(item) {
+      cart.push(item);
+      updateCart();
+      alert(`"${item.name}" added to cart!`);
+    }
+
+    // Cart modal
+    document.getElementById('cart-btn').addEventListener('click', () => {
+      const modal = document.getElementById('cart-modal');
+      const itemsDiv = document.getElementById('cart-items');
+      const totalSpan = document.getElementById('cart-total');
+
+      if (cart.length === 0) {
+        itemsDiv.innerHTML = '<p class="text-gray-400 text-center py-8">Cart is empty</p>';
+        totalSpan.textContent = '¥0';
+      } else {
+        let total = 0;
+        itemsDiv.innerHTML = cart.map((item, i) => {
+          const price = parseInt(item.price.replace(/[^0-9]/g, '')) || 0;
+          total += price;
+          return `
+            <div class="flex items-center justify-between py-3 ${i < cart.length - 1 ? 'border-b border-poke-line' : ''}">
+              <div>
+                <p class="font-medium text-sm">${item.name}</p>
+                <p class="text-xs text-gray-500">${item.category}</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="font-semibold text-sm">${item.price}</span>
+                <button onclick="removeFromCart(${i})" class="text-gray-400 hover:text-red-500 text-sm">&times;</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+        totalSpan.textContent = `¥${total.toLocaleString()}`;
+      }
+
+      modal.classList.remove('hidden');
+    });
+
+    document.getElementById('close-cart').addEventListener('click', () => {
+      document.getElementById('cart-modal').classList.add('hidden');
+    });
+
+    document.getElementById('cart-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('cart-modal')) {
+        document.getElementById('cart-modal').classList.add('hidden');
+      }
+    });
+
+    function removeFromCart(index) {
+      cart.splice(index, 1);
+      updateCart();
+      document.getElementById('cart-btn').click();
+    }
+
     // Emoji map for card categories
     const emojiMap = {
       'Holo / Reverse': '✨', 'EX / GX': '💎', 'V / VSTAR / VMAX': '⚡',
@@ -249,7 +346,7 @@
             <p class="text-sm text-gray-500 mb-4">${card.price}</p>
             ${card.status === 'sold'
               ? `<button class="w-full py-2.5 bg-gray-200 text-gray-400 text-sm font-semibold rounded-lg cursor-not-allowed">Sold Out</button>`
-              : `<button class="w-full py-2.5 bg-poke-red text-white text-sm font-semibold rounded-lg hover:bg-poke-darkred transition">Secure Now</button>`
+              : `<button onclick='addToCart(${JSON.stringify({name: card.name, category: card.category, price: card.price})})' class="w-full py-2.5 bg-poke-red text-white text-sm font-semibold rounded-lg hover:bg-poke-darkred transition">Secure Now</button>`
             }
           </div>
         </div>
