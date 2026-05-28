@@ -111,69 +111,102 @@
 
   <!-- Modal (Add/Edit Card) -->
   <div id="modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl w-full max-w-md shadow-2xl">
+    <div class="bg-white rounded-xl w-full max-w-4xl shadow-2xl overflow-hidden">
       <div class="flex items-center justify-between px-6 py-4 border-b border-poke-line">
         <h3 id="modal-title" class="font-bold text-lg">Add Card</h3>
         <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
       </div>
-      <form id="card-form" class="p-6">
+      <form id="card-form">
         <input type="hidden" id="card-id">
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Card Name *</label>
-            <input type="text" id="card-name" required placeholder="e.g. Charizard VMAX"
-                   class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-              <select id="card-category" required
-                      class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
-                <option value="">Select...</option>
-                <option value="Holo / Reverse">Holo / Reverse</option>
-                <option value="EX / GX">EX / GX</option>
-                <option value="V / VSTAR / VMAX">V / VSTAR / VMAX</option>
-                <option value="Vintage / Modern">Vintage / Modern</option>
-                <option value="AR / CHR / SAR">AR / CHR / SAR</option>
-                <option value="SR">SR</option>
-                <option value="Slab">Slab</option>
-                <option value="Promo">Promo</option>
-                <option value="Booster Box">Booster Box</option>
-                <option value="Legendary">Legendary</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-              <select id="card-status"
-                      class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
-                <option value="active">Active</option>
-                <option value="sold">Sold Out</option>
-                <option value="inactive">Inactive</option>
-              </select>
+        <div class="grid md:grid-cols-2">
+          <!-- Left: Image Upload with Drag & Drop -->
+          <div class="bg-poke-gray p-8 flex flex-col items-center justify-center min-h-[400px]">
+            <div id="drop-zone" class="w-full h-full border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-poke-red transition p-8">
+              <img id="card-image-preview" class="hidden w-full h-full object-contain rounded-lg">
+              <div id="drop-placeholder" class="text-center">
+                <div class="text-6xl mb-4">📷</div>
+                <p class="text-sm font-medium text-gray-600 mb-1">Drag & Drop image here</p>
+                <p class="text-xs text-gray-400">or click to browse</p>
+              </div>
+              <input type="file" id="card-image" accept="image/*" class="hidden">
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Price *</label>
-              <input type="text" id="card-price" required placeholder="RP 5.000.000"
-                     class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+
+          <!-- Right: Details -->
+          <div class="p-8 flex flex-col justify-between">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Grading</label>
+                <select id="card-grading" class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+                  <option value="">None</option>
+                  <option value="PSA 10">PSA 10</option>
+                  <option value="PSA 9">PSA 9</option>
+                  <option value="BGS 10">BGS 10</option>
+                  <option value="BGS 9.5">BGS 9.5</option>
+                  <option value="CGC 10">CGC 10</option>
+                  <option value="CGC 9">CGC 9</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Card Name *</label>
+                <input type="text" id="card-name" required placeholder="e.g. Charizard VMAX"
+                       class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Category *</label>
+                  <select id="card-category" required
+                          class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+                    <option value="">Select...</option>
+                    <option value="Holo / Reverse">Holo / Reverse</option>
+                    <option value="EX / GX">EX / GX</option>
+                    <option value="V / VSTAR / VMAX">V / VSTAR / VMAX</option>
+                    <option value="Vintage / Modern">Vintage / Modern</option>
+                    <option value="AR / CHR / SAR">AR / CHR / SAR</option>
+                    <option value="SR">SR</option>
+                    <option value="Slab">Slab</option>
+                    <option value="Promo">Promo</option>
+                    <option value="Booster Box">Booster Box</option>
+                    <option value="Legendary">Legendary</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Quantity</label>
+                  <input type="number" id="card-quantity" min="0" value="1" placeholder="1"
+                         class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Price *</label>
+                  <input type="text" id="card-price" required placeholder="Rp 5.000.000"
+                         class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <select id="card-status" class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+                    <option value="active">Active</option>
+                    <option value="sold">Sold Out</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Set Name</label>
+                <input type="text" id="card-set" placeholder="e.g. Champion's Path"
+                       class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea id="card-description" rows="3" placeholder="Card description..."
+                          class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm resize-none"></textarea>
+              </div>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Set Name</label>
-              <input type="text" id="card-set" placeholder="e.g. Champion's Path"
-                     class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+            <div class="flex gap-3 mt-6">
+              <button type="button" onclick="closeModal()" class="flex-1 py-2.5 border border-poke-line text-gray-600 rounded-lg hover:bg-gray-50 transition text-sm">Cancel</button>
+              <button type="submit" id="card-submit-btn" class="flex-1 py-2.5 bg-poke-red text-white font-semibold rounded-lg hover:bg-poke-darkred transition text-sm">Save Card</button>
             </div>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Image</label>
-            <input type="file" id="card-image" accept="image/*"
-                   class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-poke-red file:text-white hover:file:bg-poke-darkred">
-            <img id="card-image-preview" class="hidden mt-2 w-20 h-20 object-cover rounded-lg border border-poke-line">
-          </div>
-        </div>
-        <div class="flex gap-3 mt-6">
-          <button type="button" onclick="closeModal()" class="flex-1 py-2.5 border border-poke-line text-gray-600 rounded-lg hover:bg-gray-50 transition text-sm">Cancel</button>
-          <button type="submit" id="card-submit-btn" class="flex-1 py-2.5 bg-poke-red text-white font-semibold rounded-lg hover:bg-poke-darkred transition text-sm">Save Card</button>
         </div>
       </form>
     </div>
@@ -334,19 +367,47 @@
       } catch (err) { alert('Error: ' + err.message); }
     });
 
-    // Image preview
-    document.getElementById('card-image').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          const preview = document.getElementById('card-image-preview');
-          preview.src = ev.target.result;
-          preview.classList.remove('hidden');
-        };
-        reader.readAsDataURL(file);
+    // Image preview with Drag & Drop
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('card-image');
+    const preview = document.getElementById('card-image-preview');
+    const placeholder = document.getElementById('drop-placeholder');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('border-poke-red', 'bg-white/50');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('border-poke-red', 'bg-white/50');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-poke-red', 'bg-white/50');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        fileInput.files = e.dataTransfer.files;
+        showPreview(file);
       }
     });
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) showPreview(file);
+    });
+
+    function showPreview(file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        preview.src = ev.target.result;
+        preview.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
 
     // Init
     const user = JSON.parse(localStorage.getItem('campt_user') || '{}');
