@@ -68,11 +68,12 @@
         <a href="#" class="hover:text-poke-red transition">The Vault</a>
         <a href="#" class="hover:text-poke-red transition">Active Orders</a>
         <a href="#" class="hover:text-poke-red transition">FAQ</a>
-        <a href="/login.html" class="hover:text-poke-red transition text-xs text-gray-400">Admin</a>
+        <a href="/admin.html" id="nav-dashboard" class="hover:text-poke-red transition hidden">Dashboard</a>
       </div>
       <div class="flex items-center gap-4">
         <span class="text-sm text-gray-500">Cart (0)</span>
-        <div class="w-8 h-8 rounded-full bg-poke-gray flex items-center justify-center text-sm font-semibold">C</div>
+        <a href="/login.html" id="nav-login" class="px-4 py-2 bg-poke-red text-white text-sm font-semibold rounded-lg hover:bg-poke-darkred transition">Login</a>
+        <div id="nav-avatar" class="w-8 h-8 rounded-full bg-poke-gray flex items-center justify-center text-sm font-semibold hidden">A</div>
       </div>
     </div>
   </nav>
@@ -177,6 +178,17 @@
     const API_BASE = window.location.origin;
     let allCards = [];
     let currentCategory = '';
+
+    // Check if admin is logged in
+    function checkAdminAuth() {
+      const token = localStorage.getItem('token');
+      if (token) {
+        document.getElementById('nav-login').classList.add('hidden');
+        document.getElementById('nav-avatar').classList.remove('hidden');
+        document.getElementById('nav-dashboard').classList.remove('hidden');
+      }
+    }
+    checkAdminAuth();
 
     // Emoji map for card categories
     const emojiMap = {
