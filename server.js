@@ -62,6 +62,25 @@ db.exec(`
     name TEXT UNIQUE NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+
+  CREATE TABLE IF NOT EXISTS orders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id TEXT UNIQUE NOT NULL,
+    customer_name TEXT NOT NULL,
+    customer_email TEXT NOT NULL,
+    customer_phone TEXT NOT NULL,
+    customer_ig TEXT,
+    address TEXT NOT NULL,
+    city TEXT NOT NULL,
+    province TEXT NOT NULL,
+    postal_code TEXT NOT NULL,
+    items TEXT NOT NULL,
+    total INTEGER NOT NULL,
+    payment_method TEXT NOT NULL,
+    notes TEXT,
+    status TEXT DEFAULT 'pending',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `);
 
 // Seed default categories if empty
@@ -178,6 +197,44 @@ app.delete('/api/admin/categories/:id', authenticateToken, (req, res) => {
   
   db.prepare('DELETE FROM categories WHERE id = ?').run(req.params.id);
   res.json({ message: 'Category deleted' });
+});
+
+// ========== ORDER ROUTES ==========
+app.post('/api/orders', (req, res) => {
+  const { customer, items, payment_method, notes } = req.body;
+
+  if (!customer || !items || items.length === 0) {
+    return res.status(400).json({ error: 'Customer info and items required' });
+  }
+
+  const total = items.reduce((sum, item) => {
+    return sum + (parseInt(item.price.replace(/[^0-9]/g, '')) || 0);
+  }, 0);
+
+  const orderId = 'ORD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase();
+
+  try {
+    db.prepare(`
+      INSERT INTO orders (order_id, customer_name, customer_email, customer_phone, customer_ig, address, city, province, postal_code, items, total, payment_method, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(orderId, customer.name, customer.email, customer.phone, customer.instagram || '', customer.address, customer.city, customer.province, customer.postal_code, JSON.stringify(items), total, payment_method, notes || '');
+
+    res.json({ order_id: orderId, message: 'Order placed successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to place order' });
+  }
+});
+
+app.get('/api/admin/orders', authenticateToken, (req, res) => {
+  const orders = db.prepare('SELECT * FROM orders ORDER BY created_at DESC').all();
+  orders.forEach(o => o.items = JSON.parse(o.items));
+  res.json(orders);
+});
+
+app.put('/api/admin/orders/:id/status', authenticateToken, (req, res) => {
+  const { status } = req.body;
+  db.prepare('UPDATE orders SET status = ? WHERE id = ?').run(status, req.params.id);
+  res.json({ message: 'Order status updated' });
 });
 
 // ========== CARD ROUTES (PUBLIC) ==========

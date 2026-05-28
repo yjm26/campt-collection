@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout - Campt's Collection</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            poke: { red: '#CC0000', darkred: '#9E0000', black: '#1a1a1a', gray: '#f5f5f5', line: '#e0e0e0' }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="font-sans bg-poke-gray text-poke-black min-h-screen">
+
+  <!-- Navbar -->
+  <nav class="bg-white border-b border-poke-line sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <img src="/logo.jpg" alt="Campt's Collection" class="h-10 w-auto">
+      </a>
+      <div class="flex items-center gap-2 text-sm text-gray-500">
+        <span class="text-poke-red font-semibold">Cart</span>
+        <span>→</span>
+        <span class="font-semibold text-poke-black">Checkout</span>
+        <span>→</span>
+        <span>Confirmation</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-6xl mx-auto px-6 py-10">
+    <div class="grid lg:grid-cols-3 gap-8">
+
+      <!-- Left: Form -->
+      <div class="lg:col-span-2 space-y-6">
+
+        <!-- Contact Info -->
+        <div class="bg-white rounded-xl border border-poke-line p-6">
+          <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+            <span class="w-7 h-7 bg-poke-red text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
+            Contact Information
+          </h2>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+              <input type="text" id="cust-name" required placeholder="John Doe"
+                     class="w-full px-4 py-2.5 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+              <input type="email" id="cust-email" required placeholder="john@example.com"
+                     class="w-full px-4 py-2.5 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Phone / WhatsApp *</label>
+              <input type="tel" id="cust-phone" required placeholder="+62 812-3456-7890"
+                     class="w-full px-4 py-2.5 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Instagram (optional)</label>
+              <input type="text" id="cust-ig" placeholder="@username"
+                     class="w-full px-4 py-2.5 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+            </div>
+          </div>
+        </div>
+
+        <!-- Shipping Address -->
+        <div class="bg-white rounded-xl border border-poke-line p-6">
+          <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+            <span class="w-7 h-7 bg-poke-red text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
+            Shipping Address
+          </h2>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Address *</label>
+              <textarea id="cust-address" rows="2" required placeholder="Street address, apartment, suite, etc."
+                        class="w-full px-4 py-2.5 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm resize-none"></textarea>
+            </div>
+            <div class="grid md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">City *</label>
+                <input type="text" id="cust-city" required placeholder="Jakarta"
+                       class="w-full px-4 py-2.5 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Province *</label>
+                <input type="text" id="cust-province" required placeholder="DKI Jakarta"
+                       class="w-full px-4 py-2.5 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Postal Code *</label>
+                <input type="text" id="cust-postal" required placeholder="12345"
+                       class="w-full px-4 py-2.5 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="bg-white rounded-xl border border-poke-line p-6">
+          <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+            <span class="w-7 h-7 bg-poke-red text-white rounded-full flex items-center justify-center text-sm font-bold">3</span>
+            Payment Method
+          </h2>
+          <div class="grid md:grid-cols-2 gap-3">
+            <label class="payment-option flex items-center gap-3 p-4 border-2 border-poke-line rounded-lg cursor-pointer hover:border-poke-red transition">
+              <input type="radio" name="payment" value="bca" checked class="accent-poke-red">
+              <div>
+                <p class="font-semibold text-sm">BCA Transfer</p>
+                <p class="text-xs text-gray-500">Manual verification</p>
+              </div>
+            </label>
+            <label class="payment-option flex items-center gap-3 p-4 border-2 border-poke-line rounded-lg cursor-pointer hover:border-poke-red transition">
+              <input type="radio" name="payment" value="mandiri" class="accent-poke-red">
+              <div>
+                <p class="font-semibold text-sm">Mandiri Transfer</p>
+                <p class="text-xs text-gray-500">Manual verification</p>
+              </div>
+            </label>
+            <label class="payment-option flex items-center gap-3 p-4 border-2 border-poke-line rounded-lg cursor-pointer hover:border-poke-red transition">
+              <input type="radio" name="payment" value="gopay" class="accent-poke-red">
+              <div>
+                <p class="font-semibold text-sm">GoPay</p>
+                <p class="text-xs text-gray-500">Instant payment</p>
+              </div>
+            </label>
+            <label class="payment-option flex items-center gap-3 p-4 border-2 border-poke-line rounded-lg cursor-pointer hover:border-poke-red transition">
+              <input type="radio" name="payment" value="ovo" class="accent-poke-red">
+              <div>
+                <p class="font-semibold text-sm">OVO</p>
+                <p class="text-xs text-gray-500">Instant payment</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="bg-white rounded-xl border border-poke-line p-6">
+          <h2 class="text-lg font-bold mb-4">Order Notes (optional)</h2>
+          <textarea id="order-notes" rows="3" placeholder="Any special requests or notes for your order..."
+                    class="w-full px-4 py-2.5 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm resize-none"></textarea>
+        </div>
+      </div>
+
+      <!-- Right: Order Summary -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-xl border border-poke-line p-6 sticky top-24">
+          <h2 class="text-lg font-bold mb-4">Order Summary</h2>
+
+          <div id="checkout-items" class="space-y-3 mb-6 max-h-80 overflow-y-auto">
+            <!-- Items loaded dynamically -->
+          </div>
+
+          <div class="border-t border-poke-line pt-4 space-y-2">
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500">Subtotal</span>
+              <span id="checkout-subtotal" class="font-medium">Rp0</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500">Shipping</span>
+              <span class="font-medium text-green-600">Free</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500">Insurance</span>
+              <span class="font-medium">Rp0</span>
+            </div>
+            <div class="border-t border-poke-line pt-3 mt-3">
+              <div class="flex justify-between">
+                <span class="font-bold text-lg">Total</span>
+                <span id="checkout-total" class="font-bold text-lg text-poke-red">Rp0</span>
+              </div>
+            </div>
+          </div>
+
+          <button id="place-order-btn" onclick="placeOrder()" class="w-full mt-6 py-3.5 bg-poke-red text-white font-bold rounded-lg hover:bg-poke-darkred transition text-sm">
+            Place Order
+          </button>
+
+          <p class="text-xs text-gray-400 text-center mt-4">
+            By placing this order, you agree to our Terms & Conditions
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="success-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center">
+      <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+        <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+      <h2 class="text-2xl font-bold mb-2">Order Placed!</h2>
+      <p class="text-gray-500 mb-2">Your order has been received.</p>
+      <p id="order-id-display" class="text-sm font-mono bg-poke-gray px-3 py-1 rounded-lg inline-block mb-6"></p>
+      <p class="text-sm text-gray-500 mb-6">We'll contact you via WhatsApp for payment confirmation.</p>
+      <a href="/" class="inline-block w-full py-3 bg-poke-red text-white font-semibold rounded-lg hover:bg-poke-darkred transition text-sm">
+        Continue Shopping
+      </a>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+    let cart = JSON.parse(localStorage.getItem('campt_cart') || '[]');
+
+    // Redirect if cart is empty
+    if (cart.length === 0) {
+      window.location.href = '/';
+    }
+
+    // Render checkout items
+    function renderCheckoutItems() {
+      const container = document.getElementById('checkout-items');
+      let subtotal = 0;
+
+      container.innerHTML = cart.map(item => {
+        const price = parseInt(item.price.replace(/[^0-9]/g, '')) || 0;
+        subtotal += price;
+        return `
+          <div class="flex gap-3">
+            <div class="w-16 h-16 bg-poke-gray rounded-lg flex items-center justify-center text-2xl flex-shrink-0">
+              ${item.image_url ? `<img src="${item.image_url}" class="w-full h-full object-cover rounded-lg">` : '🃏'}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-medium text-sm truncate">${item.name}</p>
+              <p class="text-xs text-gray-500">${item.category}</p>
+              <p class="text-sm font-semibold text-green-600 mt-1">${item.price}</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('checkout-subtotal').textContent = `Rp${subtotal.toLocaleString()}`;
+      document.getElementById('checkout-total').textContent = `Rp${subtotal.toLocaleString()}`;
+    }
+
+    renderCheckoutItems();
+
+    // Place order
+    async function placeOrder() {
+      const name = document.getElementById('cust-name').value.trim();
+      const email = document.getElementById('cust-email').value.trim();
+      const phone = document.getElementById('cust-phone').value.trim();
+      const address = document.getElementById('cust-address').value.trim();
+      const city = document.getElementById('cust-city').value.trim();
+      const province = document.getElementById('cust-province').value.trim();
+      const postal = document.getElementById('cust-postal').value.trim();
+      const payment = document.querySelector('input[name="payment"]:checked').value;
+      const notes = document.getElementById('order-notes').value.trim();
+      const ig = document.getElementById('cust-ig').value.trim();
+
+      if (!name || !email || !phone || !address || !city || !province || !postal) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      const btn = document.getElementById('place-order-btn');
+      btn.disabled = true;
+      btn.textContent = 'Processing...';
+
+      try {
+        const res = await fetch(`${API_BASE}/api/orders`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customer: { name, email, phone, instagram: ig, address, city, province, postal_code: postal },
+            items: cart,
+            payment_method: payment,
+            notes
+          })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          document.getElementById('order-id-display').textContent = `Order #${data.order_id}`;
+          document.getElementById('success-modal').classList.remove('hidden');
+          localStorage.removeItem('campt_cart');
+        } else {
+          alert(data.error || 'Failed to place order');
+          btn.disabled = false;
+          btn.textContent = 'Place Order';
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = 'Place Order';
+      }
+    }
+
+    // Payment option styling
+    document.querySelectorAll('input[name="payment"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        document.querySelectorAll('.payment-option').forEach(opt => {
+          opt.classList.remove('border-poke-red');
+          opt.classList.add('border-poke-line');
+        });
+        radio.closest('.payment-option').classList.add('border-poke-red');
+        radio.closest('.payment-option').classList.remove('border-poke-line');
+      });
+      if (radio.checked) {
+        radio.closest('.payment-option').classList.add('border-poke-red');
+        radio.closest('.payment-option').classList.remove('border-poke-line');
+      }
+    });
+  </script>
+</body>
+</html>
