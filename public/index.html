@@ -82,14 +82,14 @@
     </div>
   </nav>
 
-  <!-- Cart Modal -->
-  <div id="cart-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden">
+  <!-- Cart Slide Panel -->
+  <div id="cart-modal" class="hidden fixed inset-0 bg-black/50 z-50">
+    <div id="cart-panel" class="absolute left-0 top-0 h-full w-full max-w-md bg-white shadow-xl transform -translate-x-full transition-transform duration-300">
       <div class="flex items-center justify-between p-4 border-b border-poke-line">
         <h3 class="font-bold text-lg">Your Cart</h3>
         <button id="close-cart" class="text-gray-400 hover:text-poke-red text-xl">&times;</button>
       </div>
-      <div id="cart-items" class="p-4 overflow-y-auto max-h-[50vh]">
+      <div id="cart-items" class="p-4 overflow-y-auto" style="height: calc(100vh - 180px);">
         <p class="text-gray-400 text-center py-8">Cart is empty</p>
       </div>
       <div class="border-t border-poke-line p-4">
@@ -302,6 +302,7 @@
     // Cart modal
     document.getElementById('cart-btn').addEventListener('click', () => {
       const modal = document.getElementById('cart-modal');
+      const panel = document.getElementById('cart-panel');
       const itemsDiv = document.getElementById('cart-items');
       const totalSpan = document.getElementById('cart-total');
 
@@ -330,15 +331,22 @@
       }
 
       modal.classList.remove('hidden');
+      setTimeout(() => panel.classList.remove('-translate-x-full'), 10);
     });
 
     document.getElementById('close-cart').addEventListener('click', () => {
-      document.getElementById('cart-modal').classList.add('hidden');
+      const modal = document.getElementById('cart-modal');
+      const panel = document.getElementById('cart-panel');
+      panel.classList.add('-translate-x-full');
+      setTimeout(() => modal.classList.add('hidden'), 300);
     });
 
     document.getElementById('cart-modal').addEventListener('click', (e) => {
       if (e.target === document.getElementById('cart-modal')) {
-        document.getElementById('cart-modal').classList.add('hidden');
+        const modal = document.getElementById('cart-modal');
+        const panel = document.getElementById('cart-panel');
+        panel.classList.add('-translate-x-full');
+        setTimeout(() => modal.classList.add('hidden'), 300);
       }
     });
 
