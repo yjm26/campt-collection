@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Campt's Collection</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            poke: { red: '#CC0000', darkred: '#9E0000', black: '#1a1a1a', gray: '#f5f5f5', line: '#e0e0e0' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .pokeball-sm {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: linear-gradient(to bottom, #CC0000 50%, #fff 50%);
+      border: 2px solid #1a1a1a; position: relative; display: inline-block;
+    }
+    .pokeball-sm::before {
+      content: ''; position: absolute; top: 50%; left: 0; right: 0;
+      height: 2px; background: #1a1a1a; transform: translateY(-50%);
+    }
+    .pokeball-sm::after {
+      content: ''; position: absolute; top: 50%; left: 50%;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #fff; border: 2px solid #1a1a1a;
+      transform: translate(-50%, -50%);
+    }
+    .status-active { color: #16a34a; background: #dcfce7; }
+    .status-sold { color: #dc2626; background: #fee2e2; }
+    .status-inactive { color: #ca8a04; background: #fef9c3; }
+  </style>
+</head>
+<body class="font-sans bg-poke-gray text-poke-black min-h-screen">
+
+  <!-- Navbar -->
+  <nav class="bg-white border-b border-poke-line sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="pokeball-sm"></div>
+        <span class="font-bold text-lg">CAMPT'S <span class="text-poke-red">ADMIN</span></span>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="/" class="text-sm text-gray-500 hover:text-poke-red transition">← View Store</a>
+        <span id="admin-name" class="text-sm font-medium text-gray-600"></span>
+        <button onclick="logout()" class="text-sm text-poke-red hover:underline">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto px-6 py-8">
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div class="bg-white rounded-xl border border-poke-line p-5">
+        <p class="text-sm text-gray-500">Total Cards</p>
+        <p id="stat-total" class="text-2xl font-bold mt-1">0</p>
+      </div>
+      <div class="bg-white rounded-xl border border-poke-line p-5">
+        <p class="text-sm text-gray-500">Active</p>
+        <p id="stat-active" class="text-2xl font-bold text-green-600 mt-1">0</p>
+      </div>
+      <div class="bg-white rounded-xl border border-poke-line p-5">
+        <p class="text-sm text-gray-500">Sold Out</p>
+        <p id="stat-sold" class="text-2xl font-bold text-poke-red mt-1">0</p>
+      </div>
+    </div>
+
+    <!-- Add Card Button -->
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-xl font-bold">Manage Cards</h2>
+      <button onclick="openModal()" class="px-5 py-2 bg-poke-red text-white text-sm font-semibold rounded-lg hover:bg-poke-darkred transition">
+        + Add Card
+      </button>
+    </div>
+
+    <!-- Cards Table -->
+    <div class="bg-white rounded-xl border border-poke-line overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-poke-gray border-b border-poke-line">
+            <tr>
+              <th class="text-left px-4 py-3 font-semibold text-gray-600">ID</th>
+              <th class="text-left px-4 py-3 font-semibold text-gray-600">Image</th>
+              <th class="text-left px-4 py-3 font-semibold text-gray-600">Name</th>
+              <th class="text-left px-4 py-3 font-semibold text-gray-600">Category</th>
+              <th class="text-left px-4 py-3 font-semibold text-gray-600">Price</th>
+              <th class="text-left px-4 py-3 font-semibold text-gray-600">Status</th>
+              <th class="text-left px-4 py-3 font-semibold text-gray-600">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="cards-table">
+            <!-- Cards loaded dynamically -->
+          </tbody>
+        </table>
+      </div>
+      <div id="empty-state" class="hidden py-12 text-center text-gray-400">
+        <p class="text-lg mb-2">No cards yet</p>
+        <p class="text-sm">Click "Add Card" to create one</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal (Add/Edit Card) -->
+  <div id="modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-md shadow-2xl">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-poke-line">
+        <h3 id="modal-title" class="font-bold text-lg">Add Card</h3>
+        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+      </div>
+      <form id="card-form" class="p-6">
+        <input type="hidden" id="card-id">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Card Name *</label>
+            <input type="text" id="card-name" required placeholder="e.g. Charizard VMAX"
+                   class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+              <select id="card-category" required
+                      class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+                <option value="">Select...</option>
+                <option value="Holo / Reverse">Holo / Reverse</option>
+                <option value="EX / GX">EX / GX</option>
+                <option value="V / VSTAR / VMAX">V / VSTAR / VMAX</option>
+                <option value="Vintage / Modern">Vintage / Modern</option>
+                <option value="AR / CHR / SAR">AR / CHR / SAR</option>
+                <option value="SR">SR</option>
+                <option value="Slab">Slab</option>
+                <option value="Promo">Promo</option>
+                <option value="Booster Box">Booster Box</option>
+                <option value="Legendary">Legendary</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <select id="card-status"
+                      class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+                <option value="active">Active</option>
+                <option value="sold">Sold Out</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Price *</label>
+              <input type="text" id="card-price" required placeholder="RP 5.000.000"
+                     class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Set Name</label>
+              <input type="text" id="card-set" placeholder="e.g. Champion's Path"
+                     class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Image</label>
+            <input type="file" id="card-image" accept="image/*"
+                   class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-poke-red file:text-white hover:file:bg-poke-darkred">
+            <img id="card-image-preview" class="hidden mt-2 w-20 h-20 object-cover rounded-lg border border-poke-line">
+          </div>
+        </div>
+        <div class="flex gap-3 mt-6">
+          <button type="button" onclick="closeModal()" class="flex-1 py-2.5 border border-poke-line text-gray-600 rounded-lg hover:bg-gray-50 transition text-sm">Cancel</button>
+          <button type="submit" id="card-submit-btn" class="flex-1 py-2.5 bg-poke-red text-white font-semibold rounded-lg hover:bg-poke-darkred transition text-sm">Save Card</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+    let token = localStorage.getItem('campt_token');
+    let cards = [];
+
+    // Auth check
+    if (!token) { window.location.href = '/login.html'; }
+
+    const headers = () => ({
+      'Authorization': `Bearer ${token}`,
+    });
+
+    // Logout
+    function logout() {
+      localStorage.removeItem('campt_token');
+      localStorage.removeItem('campt_user');
+      window.location.href = '/login.html';
+    }
+
+    // Load stats
+    async function loadStats() {
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/stats`, { headers: headers() });
+        if (res.status === 401 || res.status === 403) { logout(); return; }
+        const data = await res.json();
+        document.getElementById('stat-total').textContent = data.total;
+        document.getElementById('stat-active').textContent = data.active;
+        document.getElementById('stat-sold').textContent = data.sold;
+      } catch (err) { console.error('Stats error:', err); }
+    }
+
+    // Load cards
+    async function loadCards() {
+      try {
+        const res = await fetch(`${API_BASE}/api/cards`);
+        cards = await res.json();
+        renderCards();
+      } catch (err) { console.error('Cards error:', err); }
+    }
+
+    // Render cards table
+    function renderCards() {
+      const tbody = document.getElementById('cards-table');
+      const empty = document.getElementById('empty-state');
+
+      if (cards.length === 0) {
+        tbody.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+
+      empty.classList.add('hidden');
+      tbody.innerHTML = cards.map(card => `
+        <tr class="border-b border-poke-line last:border-0 hover:bg-gray-50">
+          <td class="px-4 py-3 text-gray-400">#${card.id}</td>
+          <td class="px-4 py-3">
+            ${card.image_url
+              ? `<img src="${card.image_url}" class="w-12 h-12 object-cover rounded-lg border border-poke-line">`
+              : `<div class="w-12 h-12 bg-poke-gray rounded-lg flex items-center justify-center text-gray-300 text-xs">No img</div>`
+            }
+          </td>
+          <td class="px-4 py-3 font-medium">${card.name}</td>
+          <td class="px-4 py-3 text-gray-500">${card.category}</td>
+          <td class="px-4 py-3 font-medium">${card.price}</td>
+          <td class="px-4 py-3">
+            <span class="px-2 py-1 rounded-full text-xs font-semibold status-${card.status}">${card.status}</span>
+          </td>
+          <td class="px-4 py-3">
+            <div class="flex gap-2">
+              <button onclick="editCard(${card.id})" class="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition">Edit</button>
+              <button onclick="deleteCard(${card.id})" class="px-3 py-1 text-xs font-medium text-poke-red bg-red-50 rounded-lg hover:bg-red-100 transition">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Open modal
+    function openModal(card = null) {
+      document.getElementById('modal').classList.remove('hidden');
+      document.getElementById('modal-title').textContent = card ? 'Edit Card' : 'Add Card';
+      document.getElementById('card-submit-btn').textContent = card ? 'Update Card' : 'Add Card';
+
+      if (card) {
+        document.getElementById('card-id').value = card.id;
+        document.getElementById('card-name').value = card.name;
+        document.getElementById('card-category').value = card.category;
+        document.getElementById('card-price').value = card.price;
+        document.getElementById('card-set').value = card.set_name || '';
+        document.getElementById('card-status').value = card.status;
+        if (card.image_url) {
+          const preview = document.getElementById('card-image-preview');
+          preview.src = card.image_url;
+          preview.classList.remove('hidden');
+        }
+      } else {
+        document.getElementById('card-id').value = '';
+        document.getElementById('card-form').reset();
+        document.getElementById('card-image-preview').classList.add('hidden');
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.add('hidden');
+    }
+
+    // Edit card
+    function editCard(id) {
+      const card = cards.find(c => c.id === id);
+      if (card) openModal(card);
+    }
+
+    // Delete card
+    async function deleteCard(id) {
+      if (!confirm('Delete this card?')) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/cards/${id}`, {
+          method: 'DELETE',
+          headers: headers()
+        });
+        if (res.ok) { loadCards(); loadStats(); }
+        else alert('Failed to delete card');
+      } catch (err) { alert('Error: ' + err.message); }
+    }
+
+    // Submit form (add/edit)
+    document.getElementById('card-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('card-id').value;
+      const formData = new FormData();
+      formData.append('name', document.getElementById('card-name').value);
+      formData.append('category', document.getElementById('card-category').value);
+      formData.append('price', document.getElementById('card-price').value);
+      formData.append('set_name', document.getElementById('card-set').value);
+      formData.append('status', document.getElementById('card-status').value);
+
+      const imageFile = document.getElementById('card-image').files[0];
+      if (imageFile) formData.append('image', imageFile);
+
+      try {
+        const url = id ? `${API_BASE}/api/admin/cards/${id}` : `${API_BASE}/api/admin/cards`;
+        const method = id ? 'PUT' : 'POST';
+        const res = await fetch(url, { method, headers: headers(), body: formData });
+
+        if (res.ok) {
+          closeModal();
+          loadCards();
+          loadStats();
+        } else {
+          const err = await res.json();
+          alert(err.error || 'Failed to save card');
+        }
+      } catch (err) { alert('Error: ' + err.message); }
+    });
+
+    // Image preview
+    document.getElementById('card-image').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const preview = document.getElementById('card-image-preview');
+          preview.src = ev.target.result;
+          preview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Init
+    const user = JSON.parse(localStorage.getItem('campt_user') || '{}');
+    document.getElementById('admin-name').textContent = user.username || 'Admin';
+    loadStats();
+    loadCards();
+  </script>
+</body>
+</html>

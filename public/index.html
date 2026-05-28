@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campt's Collection - Premium Vault</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            poke: { red: '#CC0000', darkred: '#9E0000', white: '#FFFFFF', black: '#1a1a1a', gray: '#f5f5f5', line: '#e0e0e0' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .pokeball-icon {
+      width: 18px; height: 18px; display: inline-block;
+      border-radius: 50%;
+      background: linear-gradient(to bottom, #CC0000 50%, #fff 50%);
+      border: 2px solid #1a1a1a;
+      position: relative; vertical-align: middle;
+    }
+    .pokeball-icon::before {
+      content: ''; position: absolute; top: 50%; left: 0; right: 0;
+      height: 2px; background: #1a1a1a; transform: translateY(-50%);
+    }
+    .pokeball-icon::after {
+      content: ''; position: absolute; top: 50%; left: 50%;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #fff; border: 2px solid #1a1a1a;
+      transform: translate(-50%, -50%);
+    }
+    .pokeball-lg {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: linear-gradient(to bottom, #CC0000 50%, #fff 50%);
+      border: 3px solid #1a1a1a; position: relative;
+    }
+    .pokeball-lg::before {
+      content: ''; position: absolute; top: 50%; left: 0; right: 0;
+      height: 3px; background: #1a1a1a; transform: translateY(-50%);
+    }
+    .pokeball-lg::after {
+      content: ''; position: absolute; top: 50%; left: 50%;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: #fff; border: 3px solid #1a1a1a;
+      transform: translate(-50%, -50%);
+    }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+    #pokeball-canvas { cursor: grab; }
+    #pokeball-canvas:active { cursor: grabbing; }
+    .filter-active { background-color: #CC0000; color: white; }
+  </style>
+</head>
+<body class="font-sans bg-white text-poke-black antialiased">
+
+  <!-- Navbar -->
+  <nav class="border-b border-poke-line sticky top-0 bg-white z-50">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="pokeball-lg scale-75"></div>
+        <span class="font-bold text-xl tracking-tight">CAMPT'S COLLECTION</span>
+      </div>
+      <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
+        <a href="#" class="hover:text-poke-red transition">The Vault</a>
+        <a href="#" class="hover:text-poke-red transition">Active Orders</a>
+        <a href="#" class="hover:text-poke-red transition">FAQ</a>
+        <a href="/login.html" class="hover:text-poke-red transition text-xs text-gray-400">Admin</a>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="text-sm text-gray-500">Cart (0)</span>
+        <div class="w-8 h-8 rounded-full bg-poke-gray flex items-center justify-center text-sm font-semibold">C</div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="max-w-7xl mx-auto px-6 py-16 md:py-24">
+    <div class="grid md:grid-cols-2 gap-12 items-center">
+      <div>
+        <div class="flex items-center gap-2 text-sm font-semibold text-poke-red uppercase tracking-wider mb-4">
+          <div class="pokeball-icon"></div>
+          Directly from Japan
+        </div>
+        <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-4">
+          Secure Your Dream Grails.<br>Before They Vanish.
+        </h1>
+        <p class="text-gray-600 text-lg mb-8">
+          Indonesia's premier vault for elite Pokémon TCG collections. Execute high-precision acquisitions directly from Mercari, SNKRDUNK, and Yahoo Auctions.
+        </p>
+        <div class="flex gap-3">
+          <input type="text" placeholder="Paste URL from Mercari, SNKRDUNK, etc..."
+                 class="flex-1 px-4 py-3 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none focus:ring-2 focus:ring-poke-red/20 transition text-sm">
+          <button class="px-6 py-3 bg-poke-red text-white font-semibold rounded-lg hover:bg-poke-darkred transition text-sm whitespace-nowrap">
+            SNIPE TARGET
+          </button>
+        </div>
+      </div>
+
+      <!-- 3D Pixel Pokéball -->
+      <div class="flex flex-col items-center justify-center">
+        <canvas id="pokeball-canvas" width="400" height="400"></canvas>
+        <p class="text-xs text-gray-400 mt-4">🖱️ Drag to rotate</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Divider -->
+  <div class="border-t border-poke-line"></div>
+
+  <!-- Gallery -->
+  <section class="max-w-7xl mx-auto px-6 py-16">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+      <h2 class="text-2xl font-bold">The Gallery</h2>
+      <input type="text" id="search-input" placeholder="Search Grails..."
+             class="w-full md:w-72 px-4 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+    </div>
+
+    <!-- Filters -->
+    <div id="filters" class="flex gap-2 overflow-x-auto pb-4 mb-8 border-b border-poke-line">
+      <button data-category="" class="filter-btn px-4 py-2 bg-poke-red text-white text-sm font-medium rounded-full whitespace-nowrap transition">All Drops</button>
+      <button data-category="Holo / Reverse" class="filter-btn px-4 py-2 text-gray-600 text-sm font-medium hover:text-poke-red whitespace-nowrap transition">Holo / Reverse</button>
+      <button data-category="EX / GX" class="filter-btn px-4 py-2 text-gray-600 text-sm font-medium hover:text-poke-red whitespace-nowrap transition">EX / GX</button>
+      <button data-category="V / VSTAR / VMAX" class="filter-btn px-4 py-2 text-gray-600 text-sm font-medium hover:text-poke-red whitespace-nowrap transition">V / VSTAR / VMAX</button>
+      <button data-category="Vintage / Modern" class="filter-btn px-4 py-2 text-gray-600 text-sm font-medium hover:text-poke-red whitespace-nowrap transition">Vintage / Modern</button>
+      <button data-category="AR / CHR / SAR" class="filter-btn px-4 py-2 text-gray-600 text-sm font-medium hover:text-poke-red whitespace-nowrap transition">AR / CHR / SAR</button>
+      <button data-category="SR" class="filter-btn px-4 py-2 text-gray-600 text-sm font-medium hover:text-poke-red whitespace-nowrap transition">SR</button>
+      <button data-category="Slab" class="filter-btn px-4 py-2 text-gray-600 text-sm font-medium hover:text-poke-red whitespace-nowrap transition">Slab</button>
+      <button data-category="Promo" class="filter-btn px-4 py-2 text-gray-600 text-sm font-medium hover:text-poke-red whitespace-nowrap transition">Promo</button>
+      <button data-category="Booster Box" class="filter-btn px-4 py-2 text-gray-600 text-sm font-medium hover:text-poke-red whitespace-nowrap transition">Booster Box</button>
+    </div>
+
+    <!-- Cards Grid -->
+    <div id="cards-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <!-- Cards loaded dynamically from API -->
+    </div>
+
+    <div id="loading" class="text-center py-12 text-gray-400">
+      <p>Loading cards...</p>
+    </div>
+
+    <div id="empty-gallery" class="hidden text-center py-12 text-gray-400">
+      <p class="text-lg mb-2">No cards found</p>
+      <p class="text-sm">Check back later or try a different filter</p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-poke-line bg-poke-gray">
+    <div class="max-w-7xl mx-auto px-6 py-12">
+      <div class="grid md:grid-cols-3 gap-8">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <div class="pokeball-icon"></div>
+            <span class="font-bold text-sm">CAMPT'S COLLECTION</span>
+          </div>
+          <p class="text-sm text-gray-500">Indonesia's premier vault for elite Pokémon TCG collections.</p>
+        </div>
+        <div>
+          <h4 class="font-semibold text-sm mb-3">Marketplaces</h4>
+          <ul class="space-y-2 text-sm text-gray-500"><li>Mercari Japan</li><li>SNKRDUNK</li><li>Yahoo Auctions</li></ul>
+        </div>
+        <div>
+          <h4 class="font-semibold text-sm mb-3">Support</h4>
+          <ul class="space-y-2 text-sm text-gray-500"><li>FAQ</li><li>Contact</li><li>Terms & Conditions</li></ul>
+        </div>
+      </div>
+      <div class="border-t border-poke-line mt-8 pt-8 text-center text-xs text-gray-400">
+        © 2026 Campt's Collection. Not affiliated with The Pokémon Company.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const API_BASE = window.location.origin;
+    let allCards = [];
+    let currentCategory = '';
+
+    // Emoji map for card categories
+    const emojiMap = {
+      'Holo / Reverse': '✨', 'EX / GX': '💎', 'V / VSTAR / VMAX': '⚡',
+      'Vintage / Modern': '📜', 'AR / CHR / SAR': '🎨', 'SR': '🌟',
+      'Slab': '🏆', 'Promo': '🎁', 'Booster Box': '📦', 'Legendary': '🌈',
+      'default': '🃏'
+    };
+
+    function getEmoji(category) { return emojiMap[category] || emojiMap['default']; }
+
+    // Load cards from API
+    async function loadCards() {
+      try {
+        const res = await fetch(`${API_BASE}/api/cards`);
+        allCards = await res.json();
+        renderCards(allCards);
+      } catch (err) {
+        console.error('Failed to load cards:', err);
+        document.getElementById('loading').textContent = 'Failed to load cards. Is the server running?';
+      }
+    }
+
+    // Render cards
+    function renderCards(cards) {
+      const grid = document.getElementById('cards-grid');
+      const loading = document.getElementById('loading');
+      const empty = document.getElementById('empty-gallery');
+
+      loading.classList.add('hidden');
+
+      // Filter active cards
+      let filtered = cards.filter(c => c.status !== 'inactive');
+      if (currentCategory) {
+        filtered = filtered.filter(c => c.category === currentCategory);
+      }
+
+      // Search filter
+      const searchTerm = document.getElementById('search-input').value.toLowerCase();
+      if (searchTerm) {
+        filtered = filtered.filter(c =>
+          c.name.toLowerCase().includes(searchTerm) ||
+          c.category.toLowerCase().includes(searchTerm) ||
+          (c.set_name && c.set_name.toLowerCase().includes(searchTerm))
+        );
+      }
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+
+      empty.classList.add('hidden');
+      grid.innerHTML = filtered.map(card => `
+        <div class="card-hover border border-poke-line rounded-xl overflow-hidden transition-all duration-200">
+          <div class="aspect-square bg-poke-gray flex items-center justify-center text-5xl overflow-hidden">
+            ${card.image_url
+              ? `<img src="${card.image_url}" alt="${card.name}" class="w-full h-full object-cover">`
+              : getEmoji(card.category)
+            }
+          </div>
+          <div class="p-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-poke-red uppercase tracking-wider">${card.category}</span>
+              <span class="text-xs text-gray-400">${card.origin || 'JP'}</span>
+            </div>
+            <h3 class="font-semibold text-base mb-1">${card.name}</h3>
+            <p class="text-sm text-gray-500 mb-4">${card.price}</p>
+            ${card.status === 'sold'
+              ? `<button class="w-full py-2.5 bg-gray-200 text-gray-400 text-sm font-semibold rounded-lg cursor-not-allowed">Sold Out</button>`
+              : `<button class="w-full py-2.5 bg-poke-red text-white text-sm font-semibold rounded-lg hover:bg-poke-darkred transition">Secure Now</button>`
+            }
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Filter buttons
+    document.getElementById('filters').addEventListener('click', (e) => {
+      const btn = e.target.closest('.filter-btn');
+      if (!btn) return;
+      currentCategory = btn.dataset.category;
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.classList.remove('bg-poke-red', 'text-white');
+        b.classList.add('text-gray-600');
+      });
+      btn.classList.add('bg-poke-red', 'text-white');
+      btn.classList.remove('text-gray-600');
+      renderCards(allCards);
+    });
+
+    // Search
+    document.getElementById('search-input').addEventListener('input', () => renderCards(allCards));
+
+    // ==================== 3D POKÉBALL ====================
+    const canvas = document.getElementById('pokeball-canvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const CX = W / 2, CY = H / 2;
+    const RADIUS = 150;
+    const PIXEL_SIZE = 6;
+
+    let rotX = -0.3, rotY = 0.5;
+    let isDragging = false;
+    let lastMouse = { x: 0, y: 0 };
+    let autoRotate = true;
+
+    function getPokeballColor(nx, ny, nz) {
+      const bandWidth = 0.06;
+      const buttonRadius = 0.18;
+      const distToCenter = Math.sqrt(nx * nx + (ny * ny) * 4);
+
+      if (Math.abs(ny) < bandWidth && nz > 0) {
+        if (distToCenter < buttonRadius * 0.6) return { r: 255, g: 255, b: 255 };
+        return { r: 26, g: 26, b: 26 };
+      }
+      if (ny < -bandWidth) {
+        const light = 0.4 + 0.6 * Math.max(0, -ny * 0.5 + nz * 0.5);
+        return { r: Math.round(204 * light), g: 0, b: 0 };
+      }
+      if (ny > bandWidth) {
+        const light = 0.5 + 0.5 * Math.max(0, ny * 0.3 + nz * 0.7);
+        return { r: Math.round(245 * light), g: Math.round(245 * light), b: Math.round(250 * light) };
+      }
+      return { r: 100, g: 100, b: 100 };
+    }
+
+    function rotateY(x, y, z, a) {
+      const c = Math.cos(a), s = Math.sin(a);
+      return { x: x * c + z * s, y, z: -x * s + z * c };
+    }
+    function rotateX(x, y, z, a) {
+      const c = Math.cos(a), s = Math.sin(a);
+      return { x, y: y * c - z * s, z: y * s + z * c };
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(CX, CY + RADIUS + 30, RADIUS * 0.7, 15, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';
+      ctx.fill();
+      ctx.restore();
+
+      for (let px = -RADIUS; px < RADIUS; px += PIXEL_SIZE) {
+        for (let py = -RADIUS; py < RADIUS; py += PIXEL_SIZE) {
+          if (Math.sqrt(px * px + py * py) > RADIUS) continue;
+          const z = Math.sqrt(RADIUS * RADIUS - px * px - py * py);
+          const nx = px / RADIUS, ny = py / RADIUS, nz = z / RADIUS;
+          let p = rotateY(nx, ny, nz, rotY);
+          p = rotateX(p.x, p.y, p.z, rotX);
+          const color = getPokeballColor(p.x, p.y, p.z);
+          const brightness = 0.6 + 0.4 * nz;
+          ctx.fillStyle = `rgb(${Math.round(color.r * brightness)},${Math.round(color.g * brightness)},${Math.round(color.b * brightness)})`;
+          ctx.fillRect(CX + px, CY + py, PIXEL_SIZE - 1, PIXEL_SIZE - 1);
+        }
+      }
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(CX - RADIUS * 0.3, CY - RADIUS * 0.35, RADIUS * 0.15, RADIUS * 0.1, -0.4, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.25)';
+      ctx.fill();
+      ctx.restore();
+    }
+
+    canvas.addEventListener('mousedown', (e) => { isDragging = true; autoRotate = false; lastMouse = { x: e.clientX, y: e.clientY }; });
+    window.addEventListener('mousemove', (e) => { if (!isDragging) return; rotY += (e.clientX - lastMouse.x) * 0.01; rotX += (e.clientY - lastMouse.y) * 0.01; lastMouse = { x: e.clientX, y: e.clientY }; draw(); });
+    window.addEventListener('mouseup', () => { isDragging = false; });
+    canvas.addEventListener('touchstart', (e) => { isDragging = true; autoRotate = false; lastMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY }; });
+    window.addEventListener('touchmove', (e) => { if (!isDragging) return; rotY += (e.touches[0].clientX - lastMouse.x) * 0.01; rotX += (e.touches[0].clientY - lastMouse.y) * 0.01; lastMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY }; draw(); });
+    window.addEventListener('touchend', () => { isDragging = false; });
+
+    function animate() {
+      if (autoRotate) { rotY += 0.008; draw(); }
+      requestAnimationFrame(animate);
+    }
+    draw();
+    animate();
+
+    // Init
+    loadCards();
+  </script>
+</body>
+</html>
