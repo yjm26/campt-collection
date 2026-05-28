@@ -281,6 +281,9 @@
     const PIXEL_SIZE = 6;
 
     let rotX = -0.3, rotY = 0.5;
+    let isDragging = false;
+    let lastMouse = { x: 0, y: 0 };
+    let resumeTimer = null;
 
     function getPokeballColor(nx, ny, nz) {
       const bandWidth = 0.06;
@@ -342,8 +345,15 @@
       ctx.restore();
     }
 
+    canvas.addEventListener('mousedown', (e) => { isDragging = true; if (resumeTimer) clearTimeout(resumeTimer); lastMouse = { x: e.clientX, y: e.clientY }; });
+    window.addEventListener('mousemove', (e) => { if (!isDragging) return; rotY += (e.clientX - lastMouse.x) * 0.01; rotX += (e.clientY - lastMouse.y) * 0.01; lastMouse = { x: e.clientX, y: e.clientY }; draw(); });
+    window.addEventListener('mouseup', () => { isDragging = false; resumeTimer = setTimeout(() => { resumeTimer = null; }, 2000); });
+    canvas.addEventListener('touchstart', (e) => { isDragging = true; if (resumeTimer) clearTimeout(resumeTimer); lastMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY }; });
+    window.addEventListener('touchmove', (e) => { if (!isDragging) return; rotY += (e.touches[0].clientX - lastMouse.x) * 0.01; rotX += (e.touches[0].clientY - lastMouse.y) * 0.01; lastMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY }; draw(); });
+    window.addEventListener('touchend', () => { isDragging = false; resumeTimer = setTimeout(() => { resumeTimer = null; }, 2000); });
+
     function animate() {
-      rotY -= 0.005;
+      if (!isDragging && !resumeTimer) { rotY -= 0.005; }
       draw();
       requestAnimationFrame(animate);
     }
