@@ -245,6 +245,29 @@ app.get('/api/admin/orders', authenticateToken, (req, res) => {
 app.put('/api/admin/orders/:id/status', authenticateToken, (req, res) => {
   const { status } = req.body;
   db.prepare('UPDATE orders SET status = ? WHERE id = ?').run(status, req.params.id);
+
+  // Auto-mark cards as sold when order is confirmed as completed
+  if (status === 'completed') {
+    const order = db.prepare('SELECT items FROM orders WHERE id = ?').get(req.params.id);
+    if (order) {
+      try {
+        const items = JSON.parse(order.items);
+        const updateCard = db.prepare("UPDATE cards SET status = 'sold', updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status != 'sold'");
+        let soldCount = 0;
+        items.forEach(item => {
+          if (item.id) {
+            const result = updateCard.run(item.id);
+            soldCount += result.changes;
+          }
+        });
+        const msg = soldCount > 0 ? `Order status updated — ${soldCount} card(s) marked as sold` : 'Order status updated';
+        return res.json({ message: msg });
+      } catch (err) {
+        console.error('Failed to auto-mark cards as sold:', err);
+      }
+    }
+  }
+
   res.json({ message: 'Order status updated' });
 });
 
