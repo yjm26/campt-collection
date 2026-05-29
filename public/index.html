@@ -179,15 +179,21 @@
   <div class="border-t border-poke-line"></div>
 
   <!-- Gallery -->
-  <section id="gallery" class="max-w-7xl mx-auto px-6 py-16">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-      <h2 class="text-2xl font-bold">The Gallery</h2>
-      <input type="text" id="search-input" placeholder="Search Grails..."
-             class="w-full md:w-72 px-4 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+  <section id="gallery" class="max-w-7xl mx-auto px-6 py-24 text-center relative">
+    <!-- Subtle Pokéball background decoration -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] opacity-[0.04] pointer-events-none select-none">
+      <svg viewBox="0 0 100 100" class="w-full h-full text-poke-red">
+        <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="3"/>
+        <path d="M 4 50 L 96 50" stroke="currentColor" stroke-width="3"/>
+        <circle cx="50" cy="50" r="16" fill="currentColor" opacity="0.6"/>
+        <circle cx="50" cy="50" r="8" fill="white"/>
+      </svg>
     </div>
+    
+    <h2 class="text-4xl md:text-5xl font-bold mb-14 relative z-10 tracking-tight">The Gallery</h2>
 
     <!-- Cards Grid - max 4 cards -->
-    <div id="cards-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+    <div id="cards-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
       <!-- Cards loaded dynamically from API -->
     </div>
 
@@ -543,25 +549,8 @@
 
       loading.classList.add('hidden');
 
-      const filtered = cards.filter(c => c.status !== 'inactive');
-
-      const searchTerm = document.getElementById('search-input').value.toLowerCase();
-      if (searchTerm) {
-        const allCardsFiltered = allCards.filter(c => c.status !== 'inactive').filter(c =>
-          c.name.toLowerCase().includes(searchTerm) ||
-          c.category.toLowerCase().includes(searchTerm) ||
-          (c.set_name && c.set_name.toLowerCase().includes(searchTerm))
-        );
-        const displayCards = allCardsFiltered.slice(0, 4);
-        if (displayCards.length === 0) {
-          grid.innerHTML = '';
-          empty.classList.remove('hidden');
-          return;
-        }
-        empty.classList.add('hidden');
-        renderCardGrid(displayCards);
-        return;
-      }
+      // Show only active cards, max 4 for homepage
+      const filtered = cards.filter(c => c.status !== 'inactive').slice(0, 4);
 
       if (filtered.length === 0) {
         grid.innerHTML = '';
@@ -613,10 +602,7 @@
       if (card) openPreview(card);
     });
 
-    // Search (re-load from full list, max 4 results)
-    document.getElementById('search-input').addEventListener('input', () => {
-      renderCards(allCards);
-    });
+    // Search removed from homepage (moved to Vault page)
 
     // ==================== 3D POKÉBALL ====================
     const canvas = document.getElementById('pokeball-canvas');
