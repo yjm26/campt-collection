@@ -78,14 +78,21 @@
 
   <!-- Navbar: Clean, minimal -->
   <nav class="border-b border-zinc-200 sticky top-0 bg-white/90 backdrop-blur-sm z-50">
-    <div class="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <img src="/logo.jpg" alt="Logo" class="h-7 w-auto">
-        <span class="text-xs font-semibold text-zinc-400 tracking-wider uppercase ml-1">Admin</span>
+    <div class="max-w-7xl mx-auto px-6 h-14 grid grid-cols-3 items-center">
+      <div class="flex items-center gap-4">
+        <a href="/" class="flex items-center gap-2.5">
+          <img src="/logo.jpg" alt="Campt's Collection" class="h-7 w-auto">
+        </a>
+        <span class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Admin</span>
       </div>
-      <div class="flex items-center gap-5">
-        <a href="/" class="text-sm text-zinc-400 hover:text-zinc-900 transition-colors">← Store</a>
+      <div class="flex items-center justify-center">
         <span id="admin-name" class="text-sm text-zinc-500"></span>
+      </div>
+      <div class="flex items-center justify-end gap-4">
+        <a href="/" class="text-sm text-zinc-400 hover:text-zinc-900 transition-colors flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          Store
+        </a>
         <button onclick="logout()" class="text-sm text-zinc-400 hover:text-zinc-900 transition-colors">Logout</button>
       </div>
     </div>
