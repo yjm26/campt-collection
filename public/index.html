@@ -189,7 +189,7 @@
     </div>
     
     <h2 class="text-4xl md:text-5xl font-extrabold mb-4 relative z-10 tracking-tight">The Gallery</h2>
-    <p class="text-gray-500 text-sm mb-14 relative z-10 font-medium tracking-wide uppercase">Premium Pokémon TCG Collection</p>
+    <p class="text-gray-400 text-[11px] mb-14 relative z-10 font-semibold tracking-[0.2em] uppercase">Where your grail finds its home</p>
 
     <!-- Cards Grid -->
     <div id="cards-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
@@ -564,26 +564,25 @@
     function renderCardGrid(cards) {
       const grid = document.getElementById('cards-grid');
       grid.innerHTML = cards.map((card, i) => `
-        <div class="card-hover bg-white rounded-2xl overflow-hidden border border-gray-200 transition-all duration-300 card-enter" style="animation-delay: ${i * 40}ms">
-          <div class="aspect-[3/4] bg-gray-100 relative overflow-hidden group">
+        <div class="card-hover bg-white rounded-2xl overflow-hidden border border-gray-100 transition-all duration-500 card-enter group" style="animation-delay: ${i * 50}ms">
+          <div class="aspect-[3/4] bg-gray-50 relative overflow-hidden">
             ${card.image_url
-              ? `<img src="${esc(card.image_url)}" alt="${esc(card.name)}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.08]">`
-              : `<div class="w-full h-full flex items-center justify-center text-gray-300">${getCardPlaceholder()}</div>`
+              ? `<img src="${esc(card.image_url)}" alt="${esc(card.name)}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.06]">`
+              : `<div class="w-full h-full flex items-center justify-center text-gray-200">${getCardPlaceholder()}</div>`
             }
-            ${card.status === 'sold' ? `<div class="absolute inset-0 bg-black/50 flex items-center justify-center backdrop-blur-[2px]"><span class="bg-white text-black px-4 py-1.5 text-xs font-bold tracking-widest uppercase rounded-full">Sold Out</span></div>` : ''}
-            ${card.grading ? `<div class="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-bold text-gray-800 tracking-wide uppercase border border-gray-100">${esc(card.grading)}</div>` : ''}
+            ${card.grading ? `<div class="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-md text-[10px] font-bold text-gray-800 tracking-wide uppercase shadow-sm">${esc(card.grading)}</div>` : ''}
+            ${card.status === 'sold' ? `<div class="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center"><span class="bg-white text-black px-5 py-2 text-[11px] font-bold tracking-[0.15em] uppercase rounded-full">Sold Out</span></div>` : ''}
           </div>
-          <div class="p-4">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">${esc(card.category)}</span>
-              <span class="text-[10px] text-gray-300">·</span>
-              <span class="text-[10px] font-bold text-gray-400">${esc(card.origin || 'JP')}</span>
+          <div class="p-5">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-[10px] font-bold text-poke-red uppercase tracking-[0.15em]">${esc(card.category)}</span>
+              <span class="text-[10px] font-bold text-gray-300 uppercase tracking-wider">${esc(card.origin || 'JP')}</span>
             </div>
-            <h3 class="font-bold text-sm text-gray-900 mb-1 leading-tight line-clamp-2">${esc(card.name)}</h3>
-            <p class="text-sm font-semibold text-poke-red mb-4">${esc(card.price)}</p>
+            <h3 class="font-bold text-[15px] text-gray-900 mb-3 leading-snug line-clamp-2">${esc(card.name)}</h3>
+            <p class="text-[17px] font-extrabold text-gray-900 mb-5 tracking-tight">${esc(card.price)}</p>
             ${card.status === 'sold'
-              ? `<button disabled class="w-full py-2.5 bg-gray-100 text-gray-400 text-xs font-bold rounded-lg cursor-not-allowed uppercase tracking-wide">Sold Out</button>`
-              : `<button data-card-id="${card.id}" class="view-details-btn w-full py-2.5 bg-[#111] text-white text-xs font-bold rounded-lg hover:bg-poke-red transition-colors duration-200 uppercase tracking-wide">View Details</button>`
+              ? `<button disabled class="w-full py-3 bg-gray-50 text-gray-300 text-[11px] font-bold rounded-xl cursor-not-allowed uppercase tracking-[0.15em]">Sold Out</button>`
+              : `<button data-card-id="${card.id}" class="view-details-btn w-full py-3 bg-[#111] text-white text-[11px] font-bold rounded-xl hover:bg-poke-red transition-all duration-300 uppercase tracking-[0.15em] group-hover:shadow-lg group-hover:shadow-poke-red/20">View Details</button>`
             }
           </div>
         </div>
