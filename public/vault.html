@@ -89,13 +89,22 @@
     
     /* Filter pills — impeccable spec */
     .filter-btn {
+      padding: 0.375rem 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      border-radius: 9999px;
+      border: 1px solid #e4e4e7;
+      background: #fff;
+      color: #71717a;
+      white-space: nowrap;
       transition: background-color 0.2s var(--ease-impeccable),
                   color 0.2s var(--ease-impeccable),
                   border-color 0.2s var(--ease-impeccable),
                   transform 0.15s var(--ease-impeccable);
     }
+    .filter-btn:hover { border-color: #a1a1aa; color: #18181b; }
     .filter-btn:active { transform: scale(0.97); }
-    .filter-active { background-color: #CC0000 !important; color: white !important; border-color: #CC0000 !important; }
+    .filter-active { background-color: #18181b !important; color: #fff !important; border-color: #18181b !important; }
     
     /* Sort dropdown */
     .sort-option {
@@ -218,7 +227,7 @@
 
     <!-- Filters -->
     <div id="filters" class="flex gap-2 overflow-x-auto pb-4 mb-4">
-      <button data-category="" class="filter-btn filter-active px-3 py-1.5 text-[11px] font-semibold rounded-full whitespace-nowrap border border-transparent">All</button>
+      <button data-category="" class="filter-btn filter-active">All</button>
     </div>
 
     <!-- Cards Grid - dense layout -->
@@ -427,7 +436,7 @@
         categories.forEach(cat => {
           const btn = document.createElement('button');
           btn.dataset.category = cat.name;
-          btn.className = 'filter-btn px-3 py-1.5 text-[11px] text-gray-500 font-semibold rounded-full whitespace-nowrap border border-transparent';
+          btn.className = 'filter-btn';
           btn.textContent = cat.name;
           filtersDiv.appendChild(btn);
         });
