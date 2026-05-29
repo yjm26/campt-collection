@@ -1,89 +1,159 @@
 <!DOCTYPE html>
-<html lang="id" class="scroll-smooth">
+<html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Vault - Campt's Collection</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
           colors: {
-            poke: { red: '#CC0000', darkred: '#9E0000', black: '#1a1a1a', gray: '#f5f5f5', line: '#e0e0e0' }
+            poke: { red: '#CC0000', darkred: '#9E0000', black: '#1a1a1a', gray: '#f5f5f5' }
           }
         }
       }
     }
   </script>
   <style>
-    body { font-family: 'Inter', sans-serif; }
-    .card-hover:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-color: #d0d0d0; }
-    .card-enter { animation: cardFadeIn 0.4s ease-out both; }
-    @keyframes cardFadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-    .filter-active { background-color: #CC0000 !important; color: white !important; border-color: #CC0000 !important; }
-    .filter-btn { transition: background-color 0.2s, color 0.2s, border-color 0.2s; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #fafafa; }
+    
+    /* Grading slab / sleeve effect */
+    .card-slab {
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    .card-slab:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+      border-color: #d0d0d0;
+    }
+    
+    /* Inner card image area */
+    .card-slab-image {
+      background: #f0f0f0;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Grading label badge */
+    .grading-badge {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(4px);
+      border: 1px solid #e5e5e5;
+      border-radius: 3px;
+      padding: 2px 6px;
+      font-size: 9px;
+      font-weight: 700;
+      color: #333;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      z-index: 10;
+    }
+    
+    /* Sold overlay */
+    .sold-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(2px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .sold-overlay span {
+      background: #fff;
+      color: #111;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+    
+    /* Card info area */
+    .card-slab-info {
+      padding: 8px 10px;
+      border-top: 1px solid #f0f0f0;
+    }
+    
+    .filter-active { background-color: #CC0000 !important; color: white !important; }
+    .card-enter { animation: fadeUp 0.4s ease-out both; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
-<body class="bg-poke-gray text-poke-black min-h-screen">
+<body class="text-[#1a1a1a]">
 
   <!-- Navbar -->
-  <nav class="bg-white border-b border-poke-line sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+  <nav class="bg-white border-b border-[#e8e8e8] sticky top-0 z-50">
+    <div class="max-w-[1400px] mx-auto px-6 h-14 flex items-center justify-between">
       <a href="/" class="flex items-center gap-3 hover:opacity-80 transition">
-        <img src="/logo.jpg" alt="Logo" class="h-8 w-auto">
-        <span class="font-bold text-lg">Campt's Collection</span>
+        <img src="/logo.jpg" alt="Logo" class="h-7 w-auto">
+        <span class="font-bold text-sm">Campt's Collection</span>
       </a>
       <div class="flex items-center gap-6">
-        <a href="/" class="text-sm text-gray-500 hover:text-poke-red transition">← Back to Store</a>
-        <a href="/checkout.html" class="relative text-sm text-gray-600 hover:text-poke-red transition">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
-          </svg>
-          <span id="cart-count" class="absolute -top-2 -right-2 bg-poke-red text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
+        <a href="/" class="text-xs text-gray-500 hover:text-poke-red transition flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          Store
         </a>
+        <a href="/vault.html" class="text-xs font-semibold text-poke-red">Vault</a>
       </div>
     </div>
   </nav>
 
   <!-- Vault Section -->
-  <section class="max-w-7xl mx-auto px-6 py-16">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-      <h2 class="text-2xl font-bold">The Vault</h2>
-      <input type="text" id="search-input" placeholder="Search Grails..."
-             class="w-full md:w-72 px-4 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+  <section class="max-w-[1400px] mx-auto px-6 py-12">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div>
+        <h2 class="text-2xl font-extrabold tracking-tight">The Vault</h2>
+        <p class="text-gray-400 text-[10px] font-semibold tracking-[0.2em] uppercase mt-1">Full Collection</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <input type="text" id="search-input" placeholder="Search cards..."
+               class="w-full md:w-64 px-3 py-2 border border-[#e0e0e0] rounded-md focus:border-poke-red focus:outline-none text-xs bg-white">
+      </div>
     </div>
 
     <!-- Filters -->
-    <div id="filters" class="flex gap-2 overflow-x-auto pb-4 mb-8">
-      <button data-category="" class="filter-btn filter-active px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap border border-transparent">All Cards</button>
+    <div id="filters" class="flex gap-2 overflow-x-auto pb-4 mb-6">
+      <button data-category="" class="filter-btn filter-active px-3 py-1.5 text-[11px] font-semibold rounded-full whitespace-nowrap">All</button>
     </div>
 
-    <!-- Cards Grid -->
-    <div id="cards-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+    <!-- Cards Grid - dense layout -->
+    <div id="cards-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3">
       <!-- Cards loaded dynamically -->
     </div>
 
-    <div id="loading" class="text-center py-12 text-gray-400">
-      <p>Loading vault...</p>
+    <div id="loading" class="text-center py-16 text-gray-400">
+      <p class="text-sm">Loading vault...</p>
     </div>
 
-    <div id="empty-vault" class="hidden text-center py-12 text-gray-400">
-      <p class="text-lg mb-2">No cards found</p>
-      <p class="text-sm">Check back later for new grails</p>
+    <div id="empty-vault" class="hidden text-center py-16 text-gray-400">
+      <p class="text-base mb-2">No cards found</p>
+      <p class="text-xs">Check back later for new arrivals</p>
     </div>
   </section>
 
   <!-- Footer -->
-  <footer class="border-t border-poke-line mt-16">
-    <div class="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-      <p class="text-sm text-gray-400">&copy; 2026 Campt's Collection. All rights reserved.</p>
-      <div class="flex items-center gap-4 text-sm text-gray-400">
+  <footer class="border-t border-[#e8e8e8] mt-12">
+    <div class="max-w-[1400px] mx-auto px-6 py-6 flex items-center justify-between">
+      <p class="text-[10px] text-gray-400">&copy; 2026 Campt's Collection</p>
+      <div class="flex items-center gap-4 text-[10px] text-gray-400">
         <a href="/" class="hover:text-poke-red transition">Store</a>
         <span>·</span>
-        <a href="/vault.html" class="hover:text-poke-red transition">Vault</a>
+        <a href="/vault.html" class="text-poke-red font-semibold">Vault</a>
       </div>
     </div>
   </footer>
@@ -101,10 +171,10 @@
     }
 
     function getCardPlaceholder() {
-      return `<svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <rect x="3" y="3" width="18" height="18" rx="2" stroke-width="1.5"/>
-        <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
-        <path d="M21 15l-5-5L5 21" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      return `<svg class="w-10 h-10 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <rect x="4" y="4" width="16" height="16" rx="2" stroke-width="1.5"/>
+        <circle cx="8" cy="8" r="1" fill="currentColor"/>
+        <path d="M20 20L14 14" stroke-width="1.5" stroke-linecap="round"/>
       </svg>`;
     }
 
@@ -116,13 +186,11 @@
         categories.forEach(cat => {
           const btn = document.createElement('button');
           btn.dataset.category = cat.name;
-          btn.className = 'filter-btn px-4 py-2 text-gray-500 text-sm font-medium rounded-full whitespace-nowrap border border-transparent hover:text-gray-900';
+          btn.className = 'filter-btn px-3 py-1.5 text-[11px] text-gray-500 font-semibold rounded-full whitespace-nowrap hover:text-gray-900 transition';
           btn.textContent = cat.name;
           filtersDiv.appendChild(btn);
         });
-      } catch (err) {
-        console.error('Failed to load categories:', err);
-      }
+      } catch (err) { console.error('Categories error:', err); }
     }
 
     async function loadCards() {
@@ -131,7 +199,7 @@
         allCards = await res.json();
         renderCards(allCards);
       } catch (err) {
-        console.error('Failed to load cards:', err);
+        console.error('Cards error:', err);
         document.getElementById('loading').textContent = 'Failed to load cards.';
       }
     }
@@ -164,28 +232,21 @@
       empty.classList.add('hidden');
 
       grid.innerHTML = filtered.map((card, i) => `
-        <div class="card-hover bg-white rounded-lg overflow-hidden border border-[#e8e8e8] transition-all duration-300 card-enter" style="animation-delay: ${i * 30}ms">
-          <div class="aspect-[3/4] bg-[#f5f5f5] relative overflow-hidden group">
+        <div class="card-slab card-enter" style="animation-delay: ${i * 20}ms">
+          <div class="card-slab-image aspect-[3/4]">
             ${card.image_url
-              ? `<img src="${esc(card.image_url)}" alt="${esc(card.name)}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]">`
+              ? `<img src="${esc(card.image_url)}" alt="${esc(card.name)}" class="w-full h-full object-cover">`
               : `<div class="w-full h-full flex items-center justify-center">${getCardPlaceholder()}</div>`
             }
-            ${card.grading ? `<div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded text-[11px] font-semibold text-gray-800 tracking-wide">${esc(card.grading)}</div>` : ''}
-            ${card.status === 'sold' ? `<div class="absolute inset-0 bg-black/40 flex items-center justify-center"><span class="bg-white px-5 py-2 text-sm font-semibold tracking-wider uppercase">Sold</span></div>` : ''}
+            ${card.grading ? `<div class="grading-badge">${esc(card.grading)}</div>` : ''}
+            ${card.status === 'sold' ? `<div class="sold-overlay"><span>Sold</span></div>` : ''}
           </div>
-          <div class="p-4">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-[11px] font-medium text-gray-400 uppercase tracking-widest">${esc(card.category)}</span>
-              <span class="text-[11px] text-gray-300">·</span>
-              <span class="text-[11px] font-medium text-gray-400">${esc(card.origin || 'JP')}</span>
-            </div>
-            <h3 class="font-semibold text-sm text-gray-900 mb-1 truncate">${esc(card.name)}</h3>
-            <p class="text-sm font-medium text-gray-600 mb-3">${esc(card.price)}</p>
-            ${card.status === 'sold'
-              ? ''
-              : `<button data-card-id="${card.id}" class="view-details-btn w-full py-2.5 bg-[#111] text-white text-xs font-semibold rounded-md hover:bg-[#333] transition-colors duration-200 tracking-wide uppercase">View Details</button>`
-            }
+          <div class="card-slab-info">
+            <p class="text-[10px] font-semibold text-gray-500 truncate mb-0.5">${esc(card.category)}</p>
+            <h3 class="text-[11px] font-bold text-gray-900 leading-tight truncate">${esc(card.name)}</h3>
+            <p class="text-[12px] font-extrabold text-gray-900 mt-1">${esc(card.price)}</p>
           </div>
+          ${card.status !== 'sold' ? `<button data-card-id="${card.id}" class="view-details-btn absolute inset-0 bg-black/0 hover:bg-black/[0.02] transition cursor-pointer" aria-label="View ${esc(card.name)}"></button>` : ''}
         </div>
       `).join('');
     }
@@ -200,7 +261,7 @@
       renderCards(allCards);
     });
 
-    // View Details buttons
+    // View Details
     document.getElementById('cards-grid').addEventListener('click', (e) => {
       const btn = e.target.closest('.view-details-btn');
       if (!btn) return;
@@ -212,9 +273,7 @@
     });
 
     // Search
-    document.getElementById('search-input').addEventListener('input', () => {
-      renderCards(allCards);
-    });
+    document.getElementById('search-input').addEventListener('input', () => renderCards(allCards));
 
     // Init
     loadCategories();
