@@ -52,11 +52,30 @@
       transform: translate(-50%, -50%);
     }
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    /* Impeccable-style easing */
+    :root { --ease-impeccable: cubic-bezier(0.16, 1, 0.3, 1); }
+    .card-hover {
+      transition: transform 0.5s var(--ease-impeccable),
+                  box-shadow 0.5s var(--ease-impeccable),
+                  border-color 0.5s var(--ease-impeccable);
+    }
     .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.08); border-color: #d0d0d0; }
-    .card-enter { animation: cardFadeIn 0.5s ease-out both; }
-    @keyframes cardFadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-    .page-btn { transition: all 0.15s; }
+    .card-enter { animation: cardFadeIn 0.4s var(--ease-impeccable) both; }
+    @keyframes cardFadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .page-btn { transition: all 0.15s var(--ease-impeccable); }
     html { scroll-behavior: smooth; }
+
+    /* View Details button hover glow */
+    .view-details-btn {
+      transition: background-color 0.3s var(--ease-impeccable),
+                  box-shadow 0.3s var(--ease-impeccable);
+    }
+
+    /* Toast animation with impeccable easing */
+    .toast-enter { animation: slideInRight 0.3s var(--ease-impeccable); }
+    .toast-exit { animation: slideOutRight 0.3s var(--ease-impeccable); }
+    @keyframes slideInRight { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes slideOutRight { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100%); } }
   </style>
 </head>
 <body class="font-sans bg-white text-poke-black antialiased">
@@ -171,12 +190,14 @@
     </div>
   </section>
 
-  <!-- Divider -->
-  <div class="border-t border-poke-line"></div>
+  <!-- Section Transition: soft gradient fade into Gallery -->
+  <div class="h-24 bg-gradient-to-b from-white to-[#fafafa]"></div>
 
   <!-- Gallery -->
-  <section id="gallery" class="relative">
-    <div class="max-w-7xl mx-auto px-6 py-24 relative z-10">
+  <section id="gallery" class="relative bg-gradient-to-b from-[#fafafa] via-white to-white">
+    <!-- Subtle warm glow at the top-right corner -->
+    <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-[radial-gradient(ellipse_at_top_right,#fdf2f2_0%,transparent_70%)] pointer-events-none"></div>
+    <div class="max-w-7xl mx-auto px-6 pt-8 pb-32 relative z-10">
       <div class="text-center">
         <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-3">The Gallery</h2>
         
@@ -205,17 +226,18 @@
       </div>
 
       <!-- View More -->
-      <div class="flex justify-center mt-12">
-        <a href="/vault.html" class="inline-flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-poke-red transition uppercase tracking-widest group">
+      <div class="flex justify-center mt-14">
+        <a href="/vault.html" class="inline-flex items-center gap-2.5 px-6 py-3 text-sm font-bold text-gray-500 hover:text-poke-red transition-all duration-300 uppercase tracking-[0.2em] group border border-transparent hover:border-gray-200 rounded-full">
           View the full vault
-          <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <svg class="w-4 h-4 transition-all duration-300 group-hover:translate-x-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
       </div>
     </div>
   </section>
 
   <!-- Recent Buyers (Social Proof) -->
-  <section class="border-t border-poke-line">
+  <section class="relative">
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
     <div class="max-w-7xl mx-auto px-6 py-16">
       <h2 class="text-2xl font-bold mb-8">Trusted by Collectors</h2>
       <div id="recent-buyers" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -234,7 +256,8 @@
   </section>
 
   <!-- FAQ Section -->
-  <section id="faq" class="border-t border-poke-line">
+  <section id="faq" class="relative">
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
     <div class="max-w-3xl mx-auto px-6 py-16">
       <h2 class="text-2xl font-bold mb-8 text-center">FAQ</h2>
       <div id="faq-list" class="space-y-3">
@@ -285,7 +308,8 @@
   </section>
 
   <!-- Footer -->
-  <footer class="border-t border-poke-line bg-poke-gray">
+  <footer class="relative bg-poke-gray">
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
     <div class="max-w-7xl mx-auto px-6 py-12">
       <div class="grid md:grid-cols-3 gap-8">
         <div>
@@ -564,7 +588,7 @@
     function renderCardGrid(cards) {
       const grid = document.getElementById('cards-grid');
       grid.innerHTML = cards.map((card, i) => `
-        <div class="card-hover bg-white rounded-2xl overflow-hidden border border-gray-100 transition-all duration-500 card-enter group" style="animation-delay: ${i * 50}ms">
+        <div class="card-hover bg-white rounded-2xl overflow-hidden border border-gray-100 transition-all duration-500 card-enter group" style="animation-delay: ${i * 30}ms">
           <div class="aspect-[3/4] bg-gray-50 relative overflow-hidden">
             ${card.image_url
               ? `<img src="${esc(card.image_url)}" alt="${esc(card.name)}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.06]">`
