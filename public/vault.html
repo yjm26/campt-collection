@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Vault - Campt's Collection</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            poke: { red: '#CC0000', darkred: '#9E0000', black: '#1a1a1a', gray: '#f5f5f5', line: '#e0e0e0' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .card-hover:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-color: #d0d0d0; }
+    .card-enter { animation: cardFadeIn 0.4s ease-out both; }
+    @keyframes cardFadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .filter-active { background-color: #CC0000 !important; color: white !important; border-color: #CC0000 !important; }
+    .filter-btn { transition: background-color 0.2s, color 0.2s, border-color 0.2s; }
+  </style>
+</head>
+<body class="bg-poke-gray text-poke-black min-h-screen">
+
+  <!-- Navbar -->
+  <nav class="bg-white border-b border-poke-line sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3 hover:opacity-80 transition">
+        <img src="/logo.jpg" alt="Logo" class="h-8 w-auto">
+        <span class="font-bold text-lg">Campt's Collection</span>
+      </a>
+      <div class="flex items-center gap-6">
+        <a href="/" class="text-sm text-gray-500 hover:text-poke-red transition">← Back to Store</a>
+        <a href="/checkout.html" class="relative text-sm text-gray-600 hover:text-poke-red transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
+          </svg>
+          <span id="cart-count" class="absolute -top-2 -right-2 bg-poke-red text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Vault Section -->
+  <section class="max-w-7xl mx-auto px-6 py-16">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+      <h2 class="text-2xl font-bold">The Vault</h2>
+      <input type="text" id="search-input" placeholder="Search Grails..."
+             class="w-full md:w-72 px-4 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+    </div>
+
+    <!-- Filters -->
+    <div id="filters" class="flex gap-2 overflow-x-auto pb-4 mb-8">
+      <button data-category="" class="filter-btn filter-active px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap border border-transparent">All Cards</button>
+    </div>
+
+    <!-- Cards Grid -->
+    <div id="cards-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+      <!-- Cards loaded dynamically -->
+    </div>
+
+    <div id="loading" class="text-center py-12 text-gray-400">
+      <p>Loading vault...</p>
+    </div>
+
+    <div id="empty-vault" class="hidden text-center py-12 text-gray-400">
+      <p class="text-lg mb-2">No cards found</p>
+      <p class="text-sm">Check back later for new grails</p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-poke-line mt-16">
+    <div class="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+      <p class="text-sm text-gray-400">&copy; 2026 Campt's Collection. All rights reserved.</p>
+      <div class="flex items-center gap-4 text-sm text-gray-400">
+        <a href="/" class="hover:text-poke-red transition">Store</a>
+        <span>·</span>
+        <a href="/vault.html" class="hover:text-poke-red transition">Vault</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const API_BASE = window.location.origin;
+    let allCards = [];
+    let currentCategory = '';
+
+    function esc(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = String(str);
+      return div.innerHTML;
+    }
+
+    function getCardPlaceholder() {
+      return `<svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="18" rx="2" stroke-width="1.5"/>
+        <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+        <path d="M21 15l-5-5L5 21" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`;
+    }
+
+    async function loadCategories() {
+      try {
+        const res = await fetch(`${API_BASE}/api/categories`);
+        const categories = await res.json();
+        const filtersDiv = document.getElementById('filters');
+        categories.forEach(cat => {
+          const btn = document.createElement('button');
+          btn.dataset.category = cat.name;
+          btn.className = 'filter-btn px-4 py-2 text-gray-500 text-sm font-medium rounded-full whitespace-nowrap border border-transparent hover:text-gray-900';
+          btn.textContent = cat.name;
+          filtersDiv.appendChild(btn);
+        });
+      } catch (err) {
+        console.error('Failed to load categories:', err);
+      }
+    }
+
+    async function loadCards() {
+      try {
+        const res = await fetch(`${API_BASE}/api/cards`);
+        allCards = await res.json();
+        renderCards(allCards);
+      } catch (err) {
+        console.error('Failed to load cards:', err);
+        document.getElementById('loading').textContent = 'Failed to load cards.';
+      }
+    }
+
+    function renderCards(cards) {
+      const grid = document.getElementById('cards-grid');
+      const loading = document.getElementById('loading');
+      const empty = document.getElementById('empty-vault');
+
+      loading.classList.add('hidden');
+
+      let filtered = cards.filter(c => c.status !== 'inactive');
+      if (currentCategory) filtered = filtered.filter(c => c.category === currentCategory);
+
+      const searchTerm = document.getElementById('search-input').value.toLowerCase();
+      if (searchTerm) {
+        filtered = filtered.filter(c =>
+          c.name.toLowerCase().includes(searchTerm) ||
+          c.category.toLowerCase().includes(searchTerm) ||
+          (c.set_name && c.set_name.toLowerCase().includes(searchTerm))
+        );
+      }
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+
+      empty.classList.add('hidden');
+
+      grid.innerHTML = filtered.map((card, i) => `
+        <div class="card-hover bg-white rounded-lg overflow-hidden border border-[#e8e8e8] transition-all duration-300 card-enter" style="animation-delay: ${i * 30}ms">
+          <div class="aspect-[3/4] bg-[#f5f5f5] relative overflow-hidden group">
+            ${card.image_url
+              ? `<img src="${esc(card.image_url)}" alt="${esc(card.name)}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]">`
+              : `<div class="w-full h-full flex items-center justify-center">${getCardPlaceholder()}</div>`
+            }
+            ${card.grading ? `<div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded text-[11px] font-semibold text-gray-800 tracking-wide">${esc(card.grading)}</div>` : ''}
+            ${card.status === 'sold' ? `<div class="absolute inset-0 bg-black/40 flex items-center justify-center"><span class="bg-white px-5 py-2 text-sm font-semibold tracking-wider uppercase">Sold</span></div>` : ''}
+          </div>
+          <div class="p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-[11px] font-medium text-gray-400 uppercase tracking-widest">${esc(card.category)}</span>
+              <span class="text-[11px] text-gray-300">·</span>
+              <span class="text-[11px] font-medium text-gray-400">${esc(card.origin || 'JP')}</span>
+            </div>
+            <h3 class="font-semibold text-sm text-gray-900 mb-1 truncate">${esc(card.name)}</h3>
+            <p class="text-sm font-medium text-gray-600 mb-3">${esc(card.price)}</p>
+            ${card.status === 'sold'
+              ? ''
+              : `<button data-card-id="${card.id}" class="view-details-btn w-full py-2.5 bg-[#111] text-white text-xs font-semibold rounded-md hover:bg-[#333] transition-colors duration-200 tracking-wide uppercase">View Details</button>`
+            }
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Filter buttons
+    document.getElementById('filters').addEventListener('click', (e) => {
+      const btn = e.target.closest('.filter-btn');
+      if (!btn) return;
+      currentCategory = btn.dataset.category;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('filter-active'));
+      btn.classList.add('filter-active');
+      renderCards(allCards);
+    });
+
+    // View Details buttons
+    document.getElementById('cards-grid').addEventListener('click', (e) => {
+      const btn = e.target.closest('.view-details-btn');
+      if (!btn) return;
+      const cardId = parseInt(btn.dataset.cardId);
+      const card = allCards.find(c => c.id === cardId);
+      if (card) {
+        window.location.href = `/?card=${cardId}`;
+      }
+    });
+
+    // Search
+    document.getElementById('search-input').addEventListener('input', () => {
+      renderCards(allCards);
+    });
+
+    // Init
+    loadCategories();
+    loadCards();
+  </script>
+</body>
+</html>

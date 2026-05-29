@@ -52,13 +52,9 @@
       transform: translate(-50%, -50%);
     }
     .card-hover:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-color: #d0d0d0; }
-    .filter-active { background-color: #CC0000 !important; color: white !important; border-color: #CC0000 !important; }
     
-    /* ===== Impeccable-style transitions ===== */
-    .filter-btn { transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s cubic-bezier(0.16, 1, 0.3, 1); }
-    .filter-btn:active { transform: scale(0.97); }
-    .card-enter { animation: cardFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
-    @keyframes cardFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .card-enter { animation: cardFadeIn 0.4s ease-out both; }
+    @keyframes cardFadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     .toast-enter { animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
     .toast-exit { animation: slideOut 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
     @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -79,7 +75,7 @@
         <img src="/logo.jpg" alt="Campt's Collection" class="h-10 w-auto">
       </div>
       <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
-        <a href="#gallery" class="hover:text-poke-red transition">The Vault</a>
+        <a href="/vault.html" class="hover:text-poke-red transition">The Vault</a>
         <a href="#faq" class="hover:text-poke-red transition">FAQ</a>
         <a href="/admin.html" id="nav-dashboard" class="hover:text-poke-red transition hidden">Dashboard</a>
       </div>
@@ -190,18 +186,9 @@
              class="w-full md:w-72 px-4 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
     </div>
 
-    <!-- Filters -->
-    <div id="filters" class="flex gap-2 overflow-x-auto pb-4 mb-8">
-      <button data-category="" class="filter-btn filter-active px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap border border-transparent">All Drops</button>
-    </div>
-
-    <!-- Cards Grid -->
-    <div id="cards-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <!-- Cards Grid - max 4 cards -->
+    <div id="cards-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-6">
       <!-- Cards loaded dynamically from API -->
-    </div>
-
-    <!-- Pagination -->
-    <div id="pagination" class="flex items-center justify-end gap-1 mt-8 mb-4 hidden">
     </div>
 
     <div id="loading" class="text-center py-12 text-gray-400">
@@ -210,7 +197,15 @@
 
     <div id="empty-gallery" class="hidden text-center py-12 text-gray-400">
       <p class="text-lg mb-2">No cards found</p>
-      <p class="text-sm">Check back later or try a different filter</p>
+      <p class="text-sm">Check back later for new grails</p>
+    </div>
+
+    <!-- View More -->
+    <div class="flex justify-end mt-8">
+      <a href="/vault.html" class="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-poke-red transition">
+        View more
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </a>
     </div>
   </section>
 
@@ -313,9 +308,6 @@
   <script>
     const API_BASE = window.location.origin;
     let allCards = [];
-    let currentCategory = '';
-    let currentPage = 1;
-    const ITEMS_PER_PAGE = 16;
 
     // XSS protection: escape HTML entities in user-provided data
     function esc(str) {
@@ -531,72 +523,59 @@
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
     </svg>`;
 
-    // Load categories for filters
-    async function loadCategories() {
-      try {
-        const res = await fetch(`${API_BASE}/api/categories?all=true`);
-        const categories = await res.json();
-        const filtersDiv = document.getElementById('filters');
-        categories.forEach(cat => {
-          const btn = document.createElement('button');
-          btn.dataset.category = cat.name;
-          btn.className = 'filter-btn px-4 py-2 text-gray-500 text-sm font-medium rounded-full whitespace-nowrap border border-transparent hover:text-gray-900';
-          btn.textContent = cat.name;
-          filtersDiv.appendChild(btn);
-        });
-      } catch (err) {
-        console.error('Failed to load categories:', err);
-      }
-    }
-
-    // Load cards from API
+    // Load cards from API (max 4 for homepage)
     async function loadCards() {
       try {
-        const res = await fetch(`${API_BASE}/api/cards`);
+        const res = await fetch(`${API_BASE}/api/cards?status=active`);
         allCards = await res.json();
-        renderCards(allCards);
+        renderCards(allCards.slice(0, 4)); // Only show 4 cards
       } catch (err) {
         console.error('Failed to load cards:', err);
         document.getElementById('loading').textContent = 'Failed to load cards. Is the server running?';
       }
     }
 
-    // Render cards
+    // Render cards (simplified - no pagination)
     function renderCards(cards) {
       const grid = document.getElementById('cards-grid');
       const loading = document.getElementById('loading');
       const empty = document.getElementById('empty-gallery');
-      const pagination = document.getElementById('pagination');
 
       loading.classList.add('hidden');
 
-      let filtered = cards.filter(c => c.status !== 'inactive');
-      if (currentCategory) filtered = filtered.filter(c => c.category === currentCategory);
+      const filtered = cards.filter(c => c.status !== 'inactive');
 
       const searchTerm = document.getElementById('search-input').value.toLowerCase();
       if (searchTerm) {
-        filtered = filtered.filter(c =>
+        const allCardsFiltered = allCards.filter(c => c.status !== 'inactive').filter(c =>
           c.name.toLowerCase().includes(searchTerm) ||
           c.category.toLowerCase().includes(searchTerm) ||
           (c.set_name && c.set_name.toLowerCase().includes(searchTerm))
         );
+        const displayCards = allCardsFiltered.slice(0, 4);
+        if (displayCards.length === 0) {
+          grid.innerHTML = '';
+          empty.classList.remove('hidden');
+          return;
+        }
+        empty.classList.add('hidden');
+        renderCardGrid(displayCards);
+        return;
       }
 
       if (filtered.length === 0) {
         grid.innerHTML = '';
         empty.classList.remove('hidden');
-        pagination.classList.add('hidden');
         return;
       }
 
       empty.classList.add('hidden');
+      renderCardGrid(filtered);
+    }
 
-      const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-      if (currentPage > totalPages) currentPage = totalPages;
-      const start = (currentPage - 1) * ITEMS_PER_PAGE;
-      const pageCards = filtered.slice(start, start + ITEMS_PER_PAGE);
-
-      grid.innerHTML = pageCards.map((card, i) => `
+    function renderCardGrid(cards) {
+      const grid = document.getElementById('cards-grid');
+      grid.innerHTML = cards.map((card, i) => `
         <div class="card-hover bg-white rounded-lg overflow-hidden border border-[#e8e8e8] transition-all duration-300 card-enter" style="animation-delay: ${i * 30}ms">
           <div class="aspect-[3/4] bg-[#f5f5f5] relative overflow-hidden group">
             ${card.image_url
@@ -621,70 +600,9 @@
           </div>
         </div>
       `).join('');
-
-      renderPagination(totalPages);
     }
 
-    // Pagination
-    function renderPagination(totalPages) {
-      const pagination = document.getElementById('pagination');
-      if (totalPages <= 1) { pagination.classList.add('hidden'); return; }
-      pagination.classList.remove('hidden');
-
-      let html = '';
-      html += `<button onclick="goToPage(${currentPage - 1})" class="px-3 py-1.5 text-sm rounded-lg border ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-poke-red hover:text-white hover:border-poke-red'} transition" ${currentPage === 1 ? 'disabled' : ''}>
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-      </button>`;
-
-      const pages = getPageNumbers(currentPage, totalPages);
-      pages.forEach(p => {
-        if (p === '...') html += `<span class="px-2 py-1.5 text-sm text-gray-400">...</span>`;
-        else html += `<button onclick="goToPage(${p})" class="px-3 py-1.5 text-sm rounded-lg border transition ${p === currentPage ? 'bg-poke-red text-white border-poke-red' : 'text-gray-600 hover:bg-poke-red hover:text-white hover:border-poke-red'}">${p}</button>`;
-      });
-
-      html += `<button onclick="goToPage(${currentPage + 1})" class="px-3 py-1.5 text-sm rounded-lg border ${currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-poke-red hover:text-white hover:border-poke-red'} transition" ${currentPage === totalPages ? 'disabled' : ''}>
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-      </button>`;
-
-      pagination.innerHTML = html;
-    }
-
-    function getPageNumbers(current, total) {
-      if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-      if (current <= 3) return [1, 2, 3, 4, '...', total - 1, total];
-      if (current >= total - 2) return [1, 2, '...', total - 3, total - 2, total - 1, total];
-      return [1, '...', current - 1, current, current + 1, '...', total];
-    }
-
-    function goToPage(page) {
-      const totalPages = Math.ceil(getFilteredCount() / ITEMS_PER_PAGE);
-      if (page < 1 || page > totalPages) return;
-      currentPage = page;
-      renderCards(allCards);
-      document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function getFilteredCount() {
-      let filtered = allCards.filter(c => c.status !== 'inactive');
-      if (currentCategory) filtered = filtered.filter(c => c.category === currentCategory);
-      const searchTerm = document.getElementById('search-input').value.toLowerCase();
-      if (searchTerm) filtered = filtered.filter(c =>
-        c.name.toLowerCase().includes(searchTerm) || c.category.toLowerCase().includes(searchTerm) || (c.set_name && c.set_name.toLowerCase().includes(searchTerm))
-      );
-      return filtered.length;
-    }
-
-
-    // Filter buttons
-    document.getElementById('filters').addEventListener('click', (e) => {
-      const btn = e.target.closest('.filter-btn');
-      if (!btn) return;
-      currentCategory = btn.dataset.category;
-      currentPage = 1;
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('filter-active'));
-      btn.classList.add('filter-active');
-      renderCards(allCards);
-    });
+    // Pagination & filter functions removed - homepage shows max 4 cards only
 
     // View Details buttons (event delegation on grid)
     document.getElementById('cards-grid').addEventListener('click', (e) => {
@@ -695,9 +613,8 @@
       if (card) openPreview(card);
     });
 
-    // Search
+    // Search (re-load from full list, max 4 results)
     document.getElementById('search-input').addEventListener('input', () => {
-      currentPage = 1;
       renderCards(allCards);
     });
 
@@ -790,7 +707,6 @@
     animate();
 
     // Init
-    loadCategories();
     loadCards();
     loadRecentBuyers();
 
