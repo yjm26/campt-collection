@@ -120,10 +120,29 @@
         <h2 class="text-2xl font-extrabold tracking-tight">The Vault</h2>
         <p class="text-gray-400 text-[10px] font-semibold tracking-[0.2em] uppercase mt-1">Full Collection</p>
       </div>
-      <div class="flex items-center gap-3">
-        <input type="text" id="search-input" placeholder="Search cards..."
-               class="w-full md:w-64 px-3 py-2 border border-[#e0e0e0] rounded-md focus:border-poke-red focus:outline-none text-xs bg-white">
+    <div class="flex items-center gap-3">
+      <!-- Sort Dropdown -->
+      <div class="relative">
+        <button id="sort-btn" class="flex items-center gap-2 px-3 py-2 border border-[#e0e0e0] rounded-md bg-white hover:border-gray-400 transition text-xs font-semibold">
+          <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m0-6V4"/></svg>
+          <span id="sort-label">Price: Low to High</span>
+        </button>
+        <!-- Dropdown Menu -->
+        <div id="sort-menu" class="hidden absolute right-0 mt-2 w-48 bg-white border border-[#e0e0e0] rounded-lg shadow-lg py-1 z-50">
+          <button data-sort="price-asc" class="sort-option w-full text-left px-4 py-2 text-xs hover:bg-gray-50 font-medium">Price: Low to High</button>
+          <button data-sort="price-desc" class="sort-option w-full text-left px-4 py-2 text-xs hover:bg-gray-50 text-gray-600">Price: High to Low</button>
+          <button data-sort="fmv-asc" class="sort-option w-full text-left px-4 py-2 text-xs hover:bg-gray-50 text-gray-600">FMV: Low to High</button>
+          <button data-sort="fmv-desc" class="sort-option w-full text-left px-4 py-2 text-xs hover:bg-gray-50 text-gray-600">FMV: High to Low</button>
+          <button data-sort="newest" class="sort-option w-full text-left px-4 py-2 text-xs hover:bg-gray-50 text-gray-600">Newest Cards</button>
+          <button data-sort="listed" class="sort-option w-full text-left px-4 py-2 text-xs hover:bg-gray-50 text-gray-600">Recently Listed</button>
+          <button data-sort="name-az" class="sort-option w-full text-left px-4 py-2 text-xs hover:bg-gray-50 text-gray-600">Name (A-Z)</button>
+          <button data-sort="name-za" class="sort-option w-full text-left px-4 py-2 text-xs hover:bg-gray-50 text-gray-600">Name (Z-A)</button>
+        </div>
       </div>
+      
+      <input type="text" id="search-input" placeholder="Search cards..."
+             class="w-full md:w-56 px-3 py-2 border border-[#e0e0e0] rounded-md focus:border-poke-red focus:outline-none text-xs bg-white">
+    </div>
     </div>
 
     <!-- Filters -->
@@ -162,6 +181,30 @@
     const API_BASE = window.location.origin;
     let allCards = [];
     let currentCategory = '';
+    let currentSort = 'price-asc';
+
+    // Helper: Parse price string to number (e.g. "Rp 100.000" -> 100000)
+    function parsePrice(str) {
+      if (!str) return 0;
+      return parseInt(String(str).replace(/[^0-9]/g, ''), 10) || 0;
+    }
+
+    // Sort Logic
+    function sortCards(cards) {
+      return [...cards].sort((a, b) => {
+        switch (currentSort) {
+          case 'price-asc': return parsePrice(a.price) - parsePrice(b.price);
+          case 'price-desc': return parsePrice(b.price) - parsePrice(a.price);
+          case 'fmv-asc': return (parsePrice(a.fmv || a.price) - parsePrice(b.fmv || b.price));
+          case 'fmv-desc': return (parsePrice(b.fmv || b.price) - parsePrice(a.fmv || a.price));
+          case 'newest': return b.id - a.id;
+          case 'listed': return b.id - a.id;
+          case 'name-az': return a.name.localeCompare(b.name);
+          case 'name-za': return b.name.localeCompare(a.name);
+          default: return 0;
+        }
+      });
+    }
 
     function esc(str) {
       if (!str) return '';
@@ -232,7 +275,10 @@
 
       empty.classList.add('hidden');
 
-      grid.innerHTML = filtered.map((card, i) => `
+      // Sort before rendering
+      const sorted = sortCards(filtered);
+
+      grid.innerHTML = sorted.map((card, i) => `
         <div class="card-slab card-enter" style="animation-delay: ${i * 20}ms">
           <div class="card-slab-image aspect-[3/4]">
             ${card.image_url
@@ -275,6 +321,40 @@
 
     // Search
     document.getElementById('search-input').addEventListener('input', () => renderCards(allCards));
+
+    // Sort Dropdown Toggle
+    const sortBtn = document.getElementById('sort-btn');
+    const sortMenu = document.getElementById('sort-menu');
+    const sortLabel = document.getElementById('sort-label');
+
+    sortBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sortMenu.classList.toggle('hidden');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', () => sortMenu.classList.add('hidden'));
+    sortMenu.addEventListener('click', (e) => e.stopPropagation());
+
+    // Sort Option Selection
+    document.querySelectorAll('.sort-option').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentSort = btn.dataset.sort;
+        
+        // Update UI
+        document.querySelectorAll('.sort-option').forEach(b => {
+          b.classList.remove('font-medium', 'text-gray-900');
+          b.classList.add('text-gray-600');
+        });
+        btn.classList.add('font-medium', 'text-gray-900');
+        btn.classList.remove('text-gray-600');
+        
+        sortLabel.textContent = btn.textContent;
+        sortMenu.classList.add('hidden');
+        
+        renderCards(allCards);
+      });
+    });
 
     // Init
     loadCategories();
