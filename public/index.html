@@ -55,8 +55,8 @@
     .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.08); border-color: #d0d0d0; }
     .card-enter { animation: cardFadeIn 0.5s ease-out both; }
     @keyframes cardFadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-    .pokeball-bg { opacity: 0.12; animation: pulseBall 4s ease-in-out infinite; }
-    @keyframes pulseBall { 0%, 100% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.05); } }
+    .pokeball-bg { opacity: 0.08; animation: slowRotate 60s linear infinite; }
+    @keyframes slowRotate { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
     .page-btn { transition: all 0.15s; }
     html { scroll-behavior: smooth; }
   </style>
@@ -177,22 +177,42 @@
   <div class="border-t border-poke-line"></div>
 
   <!-- Gallery -->
-  <section id="gallery" class="max-w-7xl mx-auto px-6 py-24 text-center relative">
-    <!-- Pokéball background decoration -->
-    <div class="pokeball-bg absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none select-none">
+  <section id="gallery" class="max-w-7xl mx-auto px-6 py-24 relative">
+    <!-- Background Pokéball rings -->
+    <div class="pokeball-bg absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] pointer-events-none select-none">
       <svg viewBox="0 0 100 100" class="w-full h-full text-poke-red">
-        <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="2"/>
-        <path d="M 4 50 L 96 50" stroke="currentColor" stroke-width="2"/>
-        <circle cx="50" cy="50" r="16" fill="currentColor" opacity="0.5"/>
-        <circle cx="50" cy="50" r="8" fill="white"/>
+        <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M 4 50 L 96 50" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="50" cy="50" r="14" fill="currentColor" opacity="0.4"/>
+        <circle cx="50" cy="50" r="7" fill="white"/>
       </svg>
     </div>
     
-    <h2 class="text-4xl md:text-5xl font-extrabold mb-4 relative z-10 tracking-tight">The Gallery</h2>
-    <p class="text-gray-400 text-[11px] mb-14 relative z-10 font-semibold tracking-[0.2em] uppercase">Where your grail finds its home</p>
+    <div class="text-center relative z-10">
+      <!-- Pokéball icon above title -->
+      <div class="flex items-center justify-center mb-8">
+        <svg width="28" height="28" viewBox="0 0 100 100" class="text-poke-red">
+          <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="5"/>
+          <path d="M 4 50 L 96 50" stroke="currentColor" stroke-width="5"/>
+          <circle cx="50" cy="50" r="16" fill="currentColor" opacity="0.5"/>
+          <circle cx="50" cy="50" r="9" fill="white" stroke="currentColor" stroke-width="4"/>
+        </svg>
+      </div>
+      
+      <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-3">The Gallery</h2>
+      
+      <!-- Elegant divider line with dot -->
+      <div class="flex items-center justify-center gap-3 mb-6">
+        <span class="w-12 h-px bg-gray-200"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-poke-red"></span>
+        <span class="w-12 h-px bg-gray-200"></span>
+      </div>
+      
+      <p class="text-gray-400 text-[11px] font-semibold tracking-[0.2em] uppercase">Where your grail finds its home</p>
+    </div>
 
     <!-- Cards Grid -->
-    <div id="cards-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+    <div id="cards-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-16 relative z-10">
       <!-- Cards loaded dynamically from API -->
     </div>
 
