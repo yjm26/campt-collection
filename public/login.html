@@ -3,72 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Campt's Collection Admin</title>
+  <title>Login — Campt's Collection</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: { sans: ['Inter', 'sans-serif'] },
-          colors: {
-            poke: { red: '#CC0000', darkred: '#9E0000', black: '#1a1a1a', gray: '#f5f5f5', line: '#e0e0e0' }
-          }
+          fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+          colors: { poke: { red: '#CC0000', darkred: '#9E0000', black: '#111111' } }
         }
       }
     }
   </script>
   <style>
-    .pokeball-icon-lg {
-      width: 64px; height: 64px; border-radius: 50%;
-      background: linear-gradient(to bottom, #CC0000 50%, #fff 50%);
-      border: 3px solid #1a1a1a; position: relative;
-    }
-    .pokeball-icon-lg::before {
-      content: ''; position: absolute; top: 50%; left: 0; right: 0;
-      height: 3px; background: #1a1a1a; transform: translateY(-50%);
-    }
-    .pokeball-icon-lg::after {
-      content: ''; position: absolute; top: 50%; left: 50%;
-      width: 16px; height: 16px; border-radius: 50%;
-      background: #fff; border: 3px solid #1a1a1a;
-      transform: translate(-50%, -50%);
-    }
+    .form-input:focus { border-color: #18181b; outline: none; }
+    .brand-left { background: #f4f4f5; }
   </style>
 </head>
-<body class="font-sans bg-poke-gray min-h-screen flex items-center justify-center p-4">
-  <div class="w-full max-w-sm">
-    <!-- Logo -->
-    <div class="text-center mb-8">
-      <div class="pokeball-icon-lg mx-auto mb-4"></div>
-      <h1 class="text-2xl font-bold text-poke-black">CAMPT'S COLLECTION</h1>
-      <p class="text-sm text-gray-500 mt-1">Admin Panel Login</p>
+<body class="font-sans antialiased">
+
+  <div class="flex min-h-screen">
+    <!-- Left: Branding -->
+    <div class="hidden lg:flex lg:w-1/2 brand-left items-center justify-center p-12">
+      <div class="text-center max-w-sm">
+        <img src="/logo.jpg" alt="Campt's Collection" class="h-24 w-auto mx-auto mb-6 rounded-lg">
+        <h1 class="text-3xl font-bold text-zinc-900 tracking-tight mb-2">Campt's Collection</h1>
+        <p class="text-zinc-400 text-sm leading-relaxed">Curated Pokémon TCG cards, sourced from Japan.</p>
+      </div>
     </div>
 
-    <!-- Login Form -->
-    <div class="bg-white rounded-xl shadow-sm border border-poke-line p-6">
-      <form id="login-form">
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-          <input type="text" id="username" required placeholder="Enter username"
-                 class="w-full px-3 py-2.5 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none focus:ring-2 focus:ring-poke-red/20 transition text-sm">
+    <!-- Right: Login Form -->
+    <div class="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
+      <div class="w-full max-w-sm">
+        <!-- Mobile logo (hidden on desktop) -->
+        <div class="lg:hidden text-center mb-8">
+          <img src="/logo.jpg" alt="Logo" class="h-12 w-auto mx-auto mb-4 rounded-lg">
+          <h1 class="text-xl font-bold text-zinc-900 tracking-tight">Campt's Collection</h1>
+          <p class="text-xs text-zinc-400 mt-1">Admin Panel</p>
         </div>
-        <div class="mb-6">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-          <input type="password" id="password" required placeholder="Enter password"
-                 class="w-full px-3 py-2.5 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none focus:ring-2 focus:ring-poke-red/20 transition text-sm">
-        </div>
-        <button type="submit" id="login-btn"
-                class="w-full py-2.5 bg-poke-red text-white font-semibold rounded-lg hover:bg-poke-darkred transition text-sm">
-          Sign In
-        </button>
-        <p id="error-msg" class="hidden text-sm text-red-500 text-center mt-3"></p>
-      </form>
-    </div>
 
-    <p class="text-center text-xs text-gray-400 mt-6">
-      <a href="/" class="hover:text-poke-red transition">← Back to Store</a>
-    </p>
+        <!-- Desktop heading -->
+        <div class="hidden lg:block mb-8">
+          <h2 class="text-2xl font-bold text-zinc-900 tracking-tight">Sign in</h2>
+          <p class="text-sm text-zinc-400 mt-1">Enter your admin credentials to continue.</p>
+        </div>
+
+        <!-- Form -->
+        <form id="login-form" class="space-y-4">
+          <div>
+            <label class="block text-xs font-medium text-zinc-500 mb-1.5">Username</label>
+            <input type="text" id="username" required placeholder="Enter username"
+                   class="form-input w-full px-3 py-2.5 border border-zinc-200 rounded-lg text-sm bg-white transition-colors">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-zinc-500 mb-1.5">Password</label>
+            <input type="password" id="password" required placeholder="Enter password"
+                   class="form-input w-full px-3 py-2.5 border border-zinc-200 rounded-lg text-sm bg-white transition-colors">
+          </div>
+          <button type="submit" id="login-btn"
+                  class="w-full py-2.5 bg-zinc-900 text-white font-medium rounded-lg hover:bg-zinc-800 transition-colors text-sm">
+            Sign In
+          </button>
+          <p id="error-msg" class="hidden text-sm text-red-500 text-center"></p>
+        </form>
+
+        <p class="text-center text-xs text-zinc-400 mt-8">
+          <a href="/" class="hover:text-zinc-900 transition-colors">← Back to Store</a>
+        </p>
+      </div>
+    </div>
   </div>
 
   <script>
