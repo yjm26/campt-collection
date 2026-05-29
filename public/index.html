@@ -574,12 +574,12 @@
             ${card.status === 'sold' ? `<div class="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center"><span class="bg-white text-black px-5 py-2 text-[11px] font-bold tracking-[0.15em] uppercase rounded-full">Sold Out</span></div>` : ''}
           </div>
           <div class="p-5">
-            <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center justify-between mb-2.5">
               <span class="text-[10px] font-bold text-poke-red uppercase tracking-[0.15em]">${esc(card.category)}</span>
               <span class="text-[10px] font-bold text-gray-300 uppercase tracking-wider">${esc(card.origin || 'JP')}</span>
             </div>
-            <h3 class="font-bold text-[15px] text-gray-900 mb-3 leading-snug line-clamp-2">${esc(card.name)}</h3>
-            <p class="text-[17px] font-extrabold text-gray-900 mb-5 tracking-tight">${esc(card.price)}</p>
+            <h3 class="font-medium text-[13px] text-gray-700 mb-1.5 leading-relaxed">${esc(card.name)}</h3>
+            <p class="text-[16px] font-semibold text-gray-900 mb-5">${esc(card.price)}</p>
             ${card.status === 'sold'
               ? `<button disabled class="w-full py-3 bg-gray-50 text-gray-300 text-[11px] font-bold rounded-xl cursor-not-allowed uppercase tracking-[0.15em]">Sold Out</button>`
               : `<button data-card-id="${card.id}" class="view-details-btn w-full py-3 bg-[#111] text-white text-[11px] font-bold rounded-xl hover:bg-poke-red transition-all duration-300 uppercase tracking-[0.15em] group-hover:shadow-lg group-hover:shadow-poke-red/20">View Details</button>`
