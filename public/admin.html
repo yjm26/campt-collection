@@ -367,6 +367,26 @@
       setTimeout(() => { toast.classList.remove('toast-enter'); toast.classList.add('toast-exit'); setTimeout(() => toast.remove(), 300); }, 2500);
     }
 
+    // Confirm dialog — custom modal, no native confirm()
+    function showConfirm(message) {
+      return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 bg-black/30 z-[200] flex items-center justify-center p-4';
+        overlay.innerHTML = `<div class="bg-white rounded-xl max-w-sm w-full p-6 border border-zinc-200 shadow-xl">
+          <p class="text-sm text-zinc-700 mb-6">${esc(message)}</p>
+          <div class="flex justify-end gap-2">
+            <button id="confirm-cancel" class="px-4 py-2 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors rounded-lg hover:bg-zinc-50">Cancel</button>
+            <button id="confirm-ok" class="px-4 py-2 text-sm font-medium bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-colors">Confirm</button>
+          </div>
+        </div>`;
+        document.body.appendChild(overlay);
+        const cleanup = () => overlay.remove();
+        overlay.querySelector('#confirm-cancel').addEventListener('click', () => { cleanup(); resolve(false); });
+        overlay.querySelector('#confirm-ok').addEventListener('click', () => { cleanup(); resolve(true); });
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) { cleanup(); resolve(false); } });
+      });
+    }
+
     let token = localStorage.getItem('campt_token');
     let cards = [];
     let orders = [];
@@ -581,14 +601,14 @@
     }
 
     async function confirmPayment(orderId) {
-      if (!confirm('Confirm payment for this order?')) return;
+      if (!(await showConfirm('Confirm payment for this order?'))) return;
       await updateOrderStatus(orderId, 'processing');
       loadOrders();
       loadDashboard();
     }
 
     async function deleteOrder(orderId) {
-      if (!confirm('Delete this order?')) return;
+      if (!(await showConfirm('Delete this order?'))) return;
       try {
         await fetch(`${API_BASE}/api/admin/orders/${orderId}`, { method: 'DELETE', headers: headers() });
         showToast('Order deleted', 'success');
@@ -600,8 +620,8 @@
     }
 
     async function clearAllOrders() {
-      if (!confirm('DELETE ALL ORDERS? This cannot be undone!')) return;
-      if (!confirm('Are you really sure?')) return;
+      if (!(await showConfirm('DELETE ALL ORDERS? This cannot be undone!'))) return;
+      if (!(await showConfirm('Are you really sure?'))) return;
       try {
         await fetch(`${API_BASE}/api/admin/orders`, { method: 'DELETE', headers: headers() });
         showToast('All orders cleared', 'success');
@@ -716,7 +736,7 @@
     function editCard(id) { const card = cards.find(c => c.id === id); if (card) openModal(card); }
 
     async function deleteCard(id) {
-      if (!confirm('Delete this card?')) return;
+      if (!(await showConfirm('Delete this card?'))) return;
       try {
         await fetch(`${API_BASE}/api/admin/cards/${id}`, { method: 'DELETE', headers: headers() });
         loadCards(); loadDashboard();
@@ -808,7 +828,7 @@
     }
 
     async function deleteCategory(id) {
-      if (!confirm('Delete this category?')) return;
+      if (!(await showConfirm('Delete this category?'))) return;
       try { await fetch(`${API_BASE}/api/admin/categories/${id}`, { method: 'DELETE', headers: headers() }); loadCategories(); }
       catch (err) { showToast('Error: ' + err.message, 'error'); }
     }

@@ -347,6 +347,26 @@
       setTimeout(() => { toast.classList.remove('toast-enter'); toast.classList.add('toast-exit'); setTimeout(() => toast.remove(), 300); }, 2500);
     }
 
+    // Confirm dialog — custom modal, no native confirm()
+    function showConfirm(message) {
+      return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 bg-black/30 z-[200] flex items-center justify-center p-4';
+        overlay.innerHTML = `<div class="bg-white rounded-xl max-w-sm w-full p-6 border border-zinc-200 shadow-xl">
+          <p class="text-sm text-zinc-700 mb-6">${esc(message)}</p>
+          <div class="flex justify-end gap-2">
+            <button id="confirm-cancel" class="px-4 py-2 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors rounded-lg hover:bg-zinc-50">Cancel</button>
+            <button id="confirm-ok" class="px-4 py-2 text-sm font-medium bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-colors">Confirm</button>
+          </div>
+        </div>`;
+        document.body.appendChild(overlay);
+        const cleanup = () => overlay.remove();
+        overlay.querySelector('#confirm-cancel').addEventListener('click', () => { cleanup(); resolve(false); });
+        overlay.querySelector('#confirm-ok').addEventListener('click', () => { cleanup(); resolve(true); });
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) { cleanup(); resolve(false); } });
+      });
+    }
+
     // Check auth
     function checkAdminAuth() {
       const token = localStorage.getItem('campt_token');
