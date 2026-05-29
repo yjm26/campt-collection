@@ -480,7 +480,7 @@
       const items = cart.map(i => `- ${i.name} (${i.price})`).join('%0A');
       const total = cart.reduce((sum, i) => sum + (parseInt(i.price.replace(/[^0-9]/g, '')) || 0), 0);
       const msg = `Halo! Mau tanya tentang item ini:%0A${items}%0A%0ATotal: Rp${total.toLocaleString()}%0A%0AMasih available?`;
-      window.open(`https://wa.me/628XXXXXXXXXX?text=${msg}`, '_blank');
+      window.open(`https://api.whatsapp.com/send/?phone=6285815801715&text=${encodeURIComponent(msg)}`, '_blank');
     }
 
     // Toast notification
@@ -739,7 +739,7 @@
   </script>
 
   <!-- Floating WhatsApp Button -->
-  <a href="https://wa.me/628XXXXXXXXXX?text=Halo! Mau tanya tentang koleksi Pokemon TCG" target="_blank"
+  <a href="https://api.whatsapp.com/send/?phone=6285815801715&text&type=phone_number&app_absent=0" target="_blank"
      class="fixed bottom-6 right-6 z-50 group">
     <div class="bg-green-500 hover:bg-green-600 text-white rounded-full p-4 shadow-lg transition-all hover:scale-110">
       <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
