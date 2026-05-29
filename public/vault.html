@@ -19,45 +19,46 @@
     }
   </script>
   <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #fafafa; }
+    :root { --ease-impeccable: cubic-bezier(0.16, 1, 0.3, 1); }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
     
-    /* Grading slab / sleeve effect */
+    /* Card slab — dense vault grid */
     .card-slab {
       background: #fff;
-      border: 1px solid #e5e5e5;
+      border: 1px solid #f0f0f0;
       border-radius: 6px;
       overflow: hidden;
-      transition: all 0.3s ease;
+      transition: transform 0.3s var(--ease-impeccable),
+                  box-shadow 0.3s var(--ease-impeccable),
+                  border-color 0.3s var(--ease-impeccable);
       position: relative;
     }
     .card-slab:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
-      border-color: #d0d0d0;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.04);
+      border-color: #d8d8d8;
     }
     
-    /* Inner card image area */
     .card-slab-image {
-      background: #f0f0f0;
+      background: #f5f5f5;
       position: relative;
       overflow: hidden;
     }
     
-    /* Grading label badge */
+    /* Grading badge — impeccable spec */
     .grading-badge {
       position: absolute;
-      top: 4px;
-      left: 4px;
+      top: 6px; left: 6px;
       background: rgba(255,255,255,0.95);
       backdrop-filter: blur(4px);
-      border: 1px solid #e5e5e5;
-      border-radius: 3px;
+      border-radius: 4px;
       padding: 2px 6px;
       font-size: 9px;
       font-weight: 700;
-      color: #333;
-      letter-spacing: 0.05em;
+      color: #444;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
       z-index: 10;
     }
     
@@ -76,27 +77,47 @@
       color: #111;
       font-size: 9px;
       font-weight: 700;
-      letter-spacing: 0.15em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       padding: 4px 12px;
       border-radius: 20px;
     }
     
-    /* Card info area */
     .card-slab-info {
       padding: 8px 10px;
-      border-top: 1px solid #f0f0f0;
+      border-top: 1px solid #f2f2f2;
     }
     
-    .filter-active { background-color: #CC0000 !important; color: white !important; }
-    .card-enter { animation: fadeUp 0.4s ease-out both; }
+    /* Filter pills — impeccable spec */
+    .filter-btn {
+      transition: background-color 0.2s var(--ease-impeccable),
+                  color 0.2s var(--ease-impeccable),
+                  border-color 0.2s var(--ease-impeccable),
+                  transform 0.15s var(--ease-impeccable);
+    }
+    .filter-btn:active { transform: scale(0.97); }
+    .filter-active { background-color: #CC0000 !important; color: white !important; border-color: #CC0000 !important; }
+    
+    /* Sort dropdown */
+    .sort-option {
+      transition: background-color 0.15s var(--ease-impeccable);
+    }
+    .sort-option.sort-active {
+      font-weight: 600;
+      color: #111;
+      background: #f5f5f5;
+    }
+
+    /* Card entrance */
+    .card-enter { animation: fadeUp 0.35s var(--ease-impeccable) both; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    html { scroll-behavior: smooth; }
   </style>
 </head>
-<body class="text-[#1a1a1a]">
+<body class="text-[#1a1a1a] bg-gradient-to-b from-white via-[#fafafa] to-white min-h-screen">
 
   <!-- Navbar -->
-  <nav class="bg-white border-b border-[#e8e8e8] sticky top-0 z-50">
+  <nav class="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
     <div class="max-w-[1400px] mx-auto px-6 h-14 flex items-center justify-between">
       <a href="/" class="flex items-center gap-3 hover:opacity-80 transition">
         <img src="/logo.jpg" alt="Logo" class="h-7 w-auto">
@@ -113,41 +134,62 @@
   </nav>
 
   <!-- Vault Section -->
-  <section class="max-w-[1400px] mx-auto px-6 py-12">
-    <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-      <div>
-        <h2 class="text-2xl font-extrabold tracking-tight">The Vault</h2>
-        <p class="text-gray-400 text-[10px] font-semibold tracking-[0.2em] uppercase mt-1">Full Collection</p>
+  <section class="max-w-[1400px] mx-auto px-6 pt-12 pb-16">
+    <!-- Header with elegant divider -->
+    <div class="text-center mb-10">
+      <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 mb-3">The Vault</h2>
+      <div class="flex items-center justify-center gap-3 mb-5">
+        <span class="w-10 h-px bg-gray-200"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-poke-red"></span>
+        <span class="w-10 h-px bg-gray-200"></span>
       </div>
-    <div class="flex items-center gap-3">
-      <!-- Sort Dropdown -->
-      <div class="relative">
-        <button id="sort-btn" class="flex items-center gap-2 px-3 py-2 border border-[#e0e0e0] rounded-md bg-white hover:border-gray-400 transition text-xs font-semibold">
-          <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m0-6V4"/></svg>
-          <span id="sort-label">Price: Low to High</span>
+      <p class="text-gray-400 text-[10px] font-semibold tracking-[0.18em] uppercase">Every card, one place</p>
+    </div>
+
+    <!-- Controls: sort, search, sold toggle, count -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-5">
+      <div class="flex items-center gap-3">
+        <!-- Sort Dropdown -->
+        <div class="relative">
+          <button id="sort-btn" class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg bg-white hover:border-gray-300 transition text-xs font-semibold text-gray-600">
+            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m0-6V4"/></svg>
+            <span id="sort-label">Price: Low to High</span>
+            <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div id="sort-menu" class="hidden absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50">
+            <button data-sort="price-asc" class="sort-option sort-active w-full text-left px-4 py-2 text-xs">Price: Low to High</button>
+            <button data-sort="price-desc" class="sort-option w-full text-left px-4 py-2 text-xs text-gray-600">Price: High to Low</button>
+            <button data-sort="fmv-asc" class="sort-option w-full text-left px-4 py-2 text-xs text-gray-600">FMV: Low to High</button>
+            <button data-sort="fmv-desc" class="sort-option w-full text-left px-4 py-2 text-xs text-gray-600">FMV: High to Low</button>
+            <button data-sort="newest" class="sort-option w-full text-left px-4 py-2 text-xs text-gray-600">Newest Cards</button>
+            <button data-sort="listed" class="sort-option w-full text-left px-4 py-2 text-xs text-gray-600">Recently Listed</button>
+            <button data-sort="name-az" class="sort-option w-full text-left px-4 py-2 text-xs text-gray-600">Name (A-Z)</button>
+            <button data-sort="name-za" class="sort-option w-full text-left px-4 py-2 text-xs text-gray-600">Name (Z-A)</button>
+          </div>
+        </div>
+
+        <!-- Sold toggle -->
+        <button id="sold-toggle" class="flex items-center gap-1.5 px-3 py-2 border border-gray-200 rounded-lg bg-white hover:border-gray-300 transition text-xs font-semibold text-gray-500">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h18v18H3z"/><line x1="3" y1="3" x2="21" y2="21" stroke-width="1.5"/></svg>
+          <span>Show Sold</span>
         </button>
-        <!-- Dropdown Menu -->
-        <div id="sort-menu" class="hidden absolute right-0 mt-2 w-48 bg-white border border-[#e0e0e0] rounded-lg shadow-lg py-1 z-50">
-          <button data-sort="price-asc" class="sort-option w-full text-left px-4 py-2 text-xs hover:bg-gray-50 font-medium">Price: Low to High</button>
-          <button data-sort="price-desc" class="sort-option w-full text-left px-4 py-2 text-xs hover:bg-gray-50 text-gray-600">Price: High to Low</button>
-          <button data-sort="fmv-asc" class="sort-option w-full text-left px-4 py-2 text-xs hover:bg-gray-50 text-gray-600">FMV: Low to High</button>
-          <button data-sort="fmv-desc" class="sort-option w-full text-left px-4 py-2 text-xs hover:bg-gray-50 text-gray-600">FMV: High to Low</button>
-          <button data-sort="newest" class="sort-option w-full text-left px-4 py-2 text-xs hover:bg-gray-50 text-gray-600">Newest Cards</button>
-          <button data-sort="listed" class="sort-option w-full text-left px-4 py-2 text-xs hover:bg-gray-50 text-gray-600">Recently Listed</button>
-          <button data-sort="name-az" class="sort-option w-full text-left px-4 py-2 text-xs hover:bg-gray-50 text-gray-600">Name (A-Z)</button>
-          <button data-sort="name-za" class="sort-option w-full text-left px-4 py-2 text-xs hover:bg-gray-50 text-gray-600">Name (Z-A)</button>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- Card count -->
+        <span id="card-count" class="text-[11px] text-gray-400 font-medium whitespace-nowrap">0 cards</span>
+        <!-- Search -->
+        <div class="relative">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input type="text" id="search-input" placeholder="Search grails..."
+                 class="w-48 md:w-56 pl-9 pr-3 py-2 border border-gray-200 rounded-lg focus:border-poke-red focus:outline-none text-xs bg-white transition-colors">
         </div>
       </div>
-      
-      <input type="text" id="search-input" placeholder="Search cards..."
-             class="w-full md:w-56 px-3 py-2 border border-[#e0e0e0] rounded-md focus:border-poke-red focus:outline-none text-xs bg-white">
-    </div>
     </div>
 
     <!-- Filters -->
-    <div id="filters" class="flex gap-2 overflow-x-auto pb-4 mb-6">
-      <button data-category="" class="filter-btn filter-active px-3 py-1.5 text-[11px] font-semibold rounded-full whitespace-nowrap">All</button>
+    <div id="filters" class="flex gap-2 overflow-x-auto pb-4 mb-4">
+      <button data-category="" class="filter-btn filter-active px-3 py-1.5 text-[11px] font-semibold rounded-full whitespace-nowrap border border-transparent">All</button>
     </div>
 
     <!-- Cards Grid - dense layout -->
@@ -166,7 +208,8 @@
   </section>
 
   <!-- Footer -->
-  <footer class="border-t border-[#e8e8e8] mt-12">
+  <footer class="relative mt-12">
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
     <div class="max-w-[1400px] mx-auto px-6 py-6 flex items-center justify-between">
       <p class="text-[10px] text-gray-400">&copy; 2026 Campt's Collection</p>
       <div class="flex items-center gap-4 text-[10px] text-gray-400">
@@ -182,14 +225,13 @@
     let allCards = [];
     let currentCategory = '';
     let currentSort = 'price-asc';
+    let showSold = false;
 
-    // Helper: Parse price string to number (e.g. "Rp 100.000" -> 100000)
     function parsePrice(str) {
       if (!str) return 0;
       return parseInt(String(str).replace(/[^0-9]/g, ''), 10) || 0;
     }
 
-    // Sort Logic
     function sortCards(cards) {
       return [...cards].sort((a, b) => {
         switch (currentSort) {
@@ -229,7 +271,7 @@
         categories.forEach(cat => {
           const btn = document.createElement('button');
           btn.dataset.category = cat.name;
-          btn.className = 'filter-btn px-3 py-1.5 text-[11px] text-gray-500 font-semibold rounded-full whitespace-nowrap hover:text-gray-900 transition';
+          btn.className = 'filter-btn px-3 py-1.5 text-[11px] text-gray-500 font-semibold rounded-full whitespace-nowrap border border-transparent';
           btn.textContent = cat.name;
           filtersDiv.appendChild(btn);
         });
@@ -251,11 +293,12 @@
       const grid = document.getElementById('cards-grid');
       const loading = document.getElementById('loading');
       const empty = document.getElementById('empty-vault');
+      const countEl = document.getElementById('card-count');
 
       loading.classList.add('hidden');
 
-      // Filter out sold items from default view
-      let filtered = cards.filter(c => c.status === 'active');
+      let filtered = cards;
+      if (!showSold) filtered = cards.filter(c => c.status === 'active');
       if (currentCategory) filtered = filtered.filter(c => c.category === currentCategory);
 
       const searchTerm = document.getElementById('search-input').value.toLowerCase();
@@ -267,16 +310,16 @@
         );
       }
 
-      if (filtered.length === 0) {
+      const sorted = sortCards(filtered);
+      countEl.textContent = `${sorted.length} card${sorted.length !== 1 ? 's' : ''}`;
+
+      if (sorted.length === 0) {
         grid.innerHTML = '';
         empty.classList.remove('hidden');
         return;
       }
 
       empty.classList.add('hidden');
-
-      // Sort before rendering
-      const sorted = sortCards(filtered);
 
       grid.innerHTML = sorted.map((card, i) => `
         <div class="card-slab card-enter" style="animation-delay: ${i * 20}ms">
@@ -289,11 +332,11 @@
             ${card.status === 'sold' ? `<div class="sold-overlay"><span>Sold</span></div>` : ''}
           </div>
           <div class="card-slab-info">
-            <p class="text-[10px] font-semibold text-gray-500 truncate mb-0.5">${esc(card.category)}</p>
-            <h3 class="text-[11px] font-bold text-gray-900 leading-tight truncate">${esc(card.name)}</h3>
+            <p class="text-[10px] font-semibold text-poke-red mb-0.5 truncate">${esc(card.category)}</p>
+            <h3 class="text-[11px] font-bold text-gray-800 leading-tight truncate">${esc(card.name)}</h3>
             <p class="text-[12px] font-extrabold text-gray-900 mt-1">${esc(card.price)}</p>
           </div>
-          ${card.status !== 'sold' ? `<button data-card-id="${card.id}" class="view-details-btn absolute inset-0 bg-black/0 hover:bg-black/[0.02] transition cursor-pointer" aria-label="View ${esc(card.name)}"></button>` : ''}
+          ${card.status !== 'sold' ? `<button data-card-id="${card.id}" class="view-details-btn absolute inset-0 bg-transparent hover:bg-black/[0.02] transition cursor-pointer" aria-label="View ${esc(card.name)}"></button>` : ''}
         </div>
       `).join('');
     }
@@ -341,19 +384,31 @@
       btn.addEventListener('click', () => {
         currentSort = btn.dataset.sort;
         
-        // Update UI
-        document.querySelectorAll('.sort-option').forEach(b => {
-          b.classList.remove('font-medium', 'text-gray-900');
-          b.classList.add('text-gray-600');
-        });
-        btn.classList.add('font-medium', 'text-gray-900');
-        btn.classList.remove('text-gray-600');
+        document.querySelectorAll('.sort-option').forEach(b => b.classList.remove('sort-active'));
+        btn.classList.add('sort-active');
         
         sortLabel.textContent = btn.textContent;
         sortMenu.classList.add('hidden');
         
         renderCards(allCards);
       });
+    });
+
+    // Sold toggle
+    const soldToggle = document.getElementById('sold-toggle');
+    soldToggle.addEventListener('click', () => {
+      showSold = !showSold;
+      const span = soldToggle.querySelector('span');
+      if (showSold) {
+        span.textContent = 'Hide Sold';
+        soldToggle.classList.add('text-poke-red', 'border-poke-red/20');
+        soldToggle.classList.remove('text-gray-500');
+      } else {
+        span.textContent = 'Show Sold';
+        soldToggle.classList.remove('text-poke-red', 'border-poke-red/20');
+        soldToggle.classList.add('text-gray-500');
+      }
+      renderCards(allCards);
     });
 
     // Init
