@@ -211,7 +211,8 @@
 
       loading.classList.add('hidden');
 
-      let filtered = cards.filter(c => c.status !== 'inactive');
+      // Filter out sold items from default view
+      let filtered = cards.filter(c => c.status === 'active');
       if (currentCategory) filtered = filtered.filter(c => c.category === currentCategory);
 
       const searchTerm = document.getElementById('search-input').value.toLowerCase();
