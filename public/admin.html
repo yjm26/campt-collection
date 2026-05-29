@@ -3,141 +3,157 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard - Campt's Collection</title>
+  <title>Admin — Campt's Collection</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
           colors: {
-            poke: { red: '#CC0000', darkred: '#9E0000', black: '#1a1a1a', gray: '#f5f5f5', line: '#e0e0e0' }
+            poke: { red: '#CC0000', darkred: '#9E0000', black: '#111111', gray: '#fafafa', line: '#e8e8e8' }
           }
         }
       }
     }
   </script>
   <style>
-    .nav-active { background-color: #CC0000; color: white; }
-    .status-pending { color: #ca8a04; background: #fef9c3; }
-    .status-processing { color: #2563eb; background: #dbeafe; }
-    .status-completed { color: #16a34a; background: #dcfce7; }
-    .status-cancelled { color: #dc2626; background: #fee2e2; }
-    .card-hover:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    :root { --ease: cubic-bezier(0.16, 1, 0.3, 1); }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    /* Tab pills */
+    .tab-pill {
+      padding: 0.5rem 1.1rem;
+      border-radius: 0.625rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #71717a;
+      background: transparent;
+      transition: all 0.2s var(--ease);
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+    .tab-pill:hover { color: #18181b; background: #f4f4f5; }
+    .tab-pill.active { color: #18181b; background: #fff; border-color: #e4e4e7; }
+
+    /* Status dots — subtle, no colored backgrounds */
+    .status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+    .status-dot.pending { background: #ca8a04; }
+    .status-dot.processing { background: #2563eb; }
+    .status-dot.completed { background: #16a34a; }
+    .status-dot.cancelled { background: #dc2626; }
+    .status-dot.active { background: #16a34a; }
+    .status-dot.sold { background: #dc2626; }
+    .status-dot.inactive { background: #a1a1aa; }
+
+    /* Card hover — subtle border, no shadow */
+    .stat-card { transition: border-color 0.3s var(--ease); }
+    .stat-card:hover { border-color: #d4d4d8; }
+
+    /* Toast animation */
+    .toast-enter { animation: slideInRight 0.3s var(--ease); }
+    .toast-exit { animation: slideOutRight 0.3s var(--ease); }
+    @keyframes slideInRight { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes slideOutRight { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100%); } }
+
+    /* Table row hover */
+    .table-row-hover { transition: background 0.15s ease; }
+    .table-row-hover:hover { background: #fafafa; }
+
+    /* Form focus */
+    .form-input:focus { border-color: #18181b; outline: none; }
+
+    /* Modal transition */
+    .modal-backdrop { transition: opacity 0.2s var(--ease); }
+    .modal-content { transition: transform 0.2s var(--ease), opacity 0.2s var(--ease); }
   </style>
 </head>
-<body class="font-sans bg-poke-gray text-poke-black min-h-screen">
+<body class="bg-white text-zinc-900 antialiased">
 
   <!-- Toast Container -->
   <div id="toast-container" class="fixed top-20 right-6 z-[100] flex flex-col gap-3"></div>
 
-  <!-- Navbar -->
-  <nav class="bg-white border-b border-poke-line sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+  <!-- Navbar: Clean, minimal -->
+  <nav class="border-b border-zinc-200 sticky top-0 bg-white/90 backdrop-blur-sm z-50">
+    <div class="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <img src="/logo.jpg" alt="Logo" class="h-8 w-auto">
-        <span class="font-bold text-lg">ADMIN</span>
+        <img src="/logo.jpg" alt="Logo" class="h-7 w-auto">
+        <span class="text-xs font-semibold text-zinc-400 tracking-wider uppercase ml-1">Admin</span>
       </div>
-      <div class="flex items-center gap-4">
-        <a href="/" class="text-sm text-gray-500 hover:text-poke-red transition">← View Store</a>
-        <span id="admin-name" class="text-sm font-medium text-gray-600"></span>
-        <button onclick="logout()" class="text-sm text-poke-red hover:underline">Logout</button>
+      <div class="flex items-center gap-5">
+        <a href="/" class="text-sm text-zinc-400 hover:text-zinc-900 transition-colors">← Store</a>
+        <span id="admin-name" class="text-sm text-zinc-500"></span>
+        <button onclick="logout()" class="text-sm text-zinc-400 hover:text-zinc-900 transition-colors">Logout</button>
       </div>
     </div>
   </nav>
 
   <div class="max-w-7xl mx-auto px-6 py-8">
 
-    <!-- Tab Navigation -->
-    <div class="flex gap-2 mb-8 overflow-x-auto pb-2">
-      <button onclick="switchTab('dashboard')" id="tab-dashboard" class="nav-active px-5 py-2.5 rounded-lg text-sm font-semibold transition whitespace-nowrap">
-        Dashboard
-      </button>
-      <button onclick="switchTab('orders')" id="tab-orders" class="px-5 py-2.5 rounded-lg text-sm font-semibold text-gray-600 hover:bg-white transition whitespace-nowrap">
-        Orders
-      </button>
-      <button onclick="switchTab('cards')" id="tab-cards" class="px-5 py-2.5 rounded-lg text-sm font-semibold text-gray-600 hover:bg-white transition whitespace-nowrap">
-        Cards
-      </button>
-      <button onclick="switchTab('categories')" id="tab-categories" class="px-5 py-2.5 rounded-lg text-sm font-semibold text-gray-600 hover:bg-white transition whitespace-nowrap">
-        Categories
-      </button>
+    <!-- Tab Navigation: Clean pills -->
+    <div class="flex gap-1 mb-8 overflow-x-auto pb-1 bg-zinc-100/60 rounded-lg p-1 w-fit">
+      <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-pill active">Dashboard</button>
+      <button onclick="switchTab('orders')" id="tab-orders" class="tab-pill">Orders</button>
+      <button onclick="switchTab('cards')" id="tab-cards" class="tab-pill">Cards</button>
+      <button onclick="switchTab('categories')" id="tab-categories" class="tab-pill">Categories</button>
     </div>
 
     <!-- ========== DASHBOARD TAB ========== -->
     <div id="content-dashboard">
-      <!-- Stats Cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white rounded-xl border border-poke-line p-5 card-hover transition-all">
-          <div class="flex items-center justify-between mb-3">
-            <p class="text-sm text-gray-500">Revenue Today</p>
-            <span class="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">Today</span>
-          </div>
-          <p id="stat-revenue-today" class="text-2xl font-bold text-green-600">Rp0</p>
+      <!-- Stats: Clean, no colored badges, no colored numbers -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="stat-card bg-white rounded-xl border border-zinc-200 p-5">
+          <p class="text-xs font-medium text-zinc-400 mb-1 uppercase tracking-wider">Revenue Today</p>
+          <p id="stat-revenue-today" class="text-2xl font-bold text-zinc-900 tracking-tight">Rp0</p>
         </div>
-        <div class="bg-white rounded-xl border border-poke-line p-5 card-hover transition-all">
-          <div class="flex items-center justify-between mb-3">
-            <p class="text-sm text-gray-500">Revenue This Month</p>
-            <span class="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">Monthly</span>
-          </div>
-          <p id="stat-revenue-month" class="text-2xl font-bold text-blue-600">Rp0</p>
+        <div class="stat-card bg-white rounded-xl border border-zinc-200 p-5">
+          <p class="text-xs font-medium text-zinc-400 mb-1 uppercase tracking-wider">Revenue This Month</p>
+          <p id="stat-revenue-month" class="text-2xl font-bold text-zinc-900 tracking-tight">Rp0</p>
         </div>
-        <div class="bg-white rounded-xl border border-poke-line p-5 card-hover transition-all">
-          <div class="flex items-center justify-between mb-3">
-            <p class="text-sm text-gray-500">Orders Today</p>
-            <span class="text-xs text-poke-red bg-red-50 px-2 py-1 rounded-full">Today</span>
-          </div>
-          <p id="stat-orders-today" class="text-2xl font-bold">0</p>
+        <div class="stat-card bg-white rounded-xl border border-zinc-200 p-5">
+          <p class="text-xs font-medium text-zinc-400 mb-1 uppercase tracking-wider">Orders Today</p>
+          <p id="stat-orders-today" class="text-2xl font-bold text-zinc-900 tracking-tight">0</p>
         </div>
-        <div class="bg-white rounded-xl border border-poke-line p-5 card-hover transition-all">
-          <div class="flex items-center justify-between mb-3">
-            <p class="text-sm text-gray-500">Total Orders</p>
-            <span class="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full">All Time</span>
-          </div>
-          <p id="stat-orders-total" class="text-2xl font-bold">0</p>
+        <div class="stat-card bg-white rounded-xl border border-zinc-200 p-5">
+          <p class="text-xs font-medium text-zinc-400 mb-1 uppercase tracking-wider">Total Orders</p>
+          <p id="stat-orders-total" class="text-2xl font-bold text-zinc-900 tracking-tight">0</p>
         </div>
       </div>
 
       <!-- Charts Row -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <!-- Monthly Revenue Chart -->
-        <div class="bg-white rounded-xl border border-poke-line p-6">
-          <h3 class="font-bold text-lg mb-4">Monthly Revenue</h3>
-          <div class="h-64">
-            <canvas id="revenue-chart"></canvas>
-          </div>
+        <div class="bg-white rounded-xl border border-zinc-200 p-6">
+          <h3 class="font-semibold text-sm text-zinc-500 mb-5 uppercase tracking-wider">Revenue — 6 Months</h3>
+          <div class="h-64"><canvas id="revenue-chart"></canvas></div>
         </div>
-        <!-- Order Status Chart -->
-        <div class="bg-white rounded-xl border border-poke-line p-6">
-          <h3 class="font-bold text-lg mb-4">Order Status</h3>
-          <div class="h-64">
-            <canvas id="status-chart"></canvas>
-          </div>
+        <div class="bg-white rounded-xl border border-zinc-200 p-6">
+          <h3 class="font-semibold text-sm text-zinc-500 mb-5 uppercase tracking-wider">Orders by Status</h3>
+          <div class="h-64"><canvas id="status-chart"></canvas></div>
         </div>
       </div>
 
-      <!-- Recent Orders -->
-      <div class="bg-white rounded-xl border border-poke-line overflow-hidden">
-        <div class="px-6 py-4 border-b border-poke-line flex items-center justify-between">
-          <h3 class="font-bold text-lg">Recent Orders</h3>
-          <button onclick="switchTab('orders')" class="text-sm text-poke-red hover:underline">View All</button>
+      <!-- Recent Orders: Clean table -->
+      <div class="bg-white rounded-xl border border-zinc-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-zinc-200 flex items-center justify-between">
+          <h3 class="font-semibold text-sm text-zinc-500 uppercase tracking-wider">Recent Orders</h3>
+          <button onclick="switchTab('orders')" class="text-sm text-zinc-400 hover:text-zinc-900 transition-colors">View all</button>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
-            <thead class="bg-poke-gray border-b border-poke-line">
+            <thead class="bg-zinc-50/50">
               <tr>
-                <th class="text-left px-6 py-3 font-semibold text-gray-600">Order ID</th>
-                <th class="text-left px-6 py-3 font-semibold text-gray-600">Customer</th>
-                <th class="text-left px-6 py-3 font-semibold text-gray-600">Items</th>
-                <th class="text-left px-6 py-3 font-semibold text-gray-600">Total</th>
-                <th class="text-left px-6 py-3 font-semibold text-gray-600">Status</th>
-                <th class="text-left px-6 py-3 font-semibold text-gray-600">Date</th>
+                <th class="text-left px-6 py-3 font-semibold text-zinc-400 text-xs uppercase tracking-wider">Order ID</th>
+                <th class="text-left px-6 py-3 font-semibold text-zinc-400 text-xs uppercase tracking-wider">Customer</th>
+                <th class="text-left px-6 py-3 font-semibold text-zinc-400 text-xs uppercase tracking-wider">Items</th>
+                <th class="text-left px-6 py-3 font-semibold text-zinc-400 text-xs uppercase tracking-wider">Total</th>
+                <th class="text-left px-6 py-3 font-semibold text-zinc-400 text-xs uppercase tracking-wider">Status</th>
+                <th class="text-left px-6 py-3 font-semibold text-zinc-400 text-xs uppercase tracking-wider">Date</th>
               </tr>
             </thead>
             <tbody id="recent-orders-table">
-              <tr><td colspan="6" class="text-center py-8 text-gray-400">No orders yet</td></tr>
+              <tr><td colspan="6" class="text-center py-10 text-zinc-300 text-sm">No orders yet</td></tr>
             </tbody>
           </table>
         </div>
@@ -146,29 +162,27 @@
 
     <!-- ========== ORDERS TAB ========== -->
     <div id="content-orders" class="hidden">
-      <div class="bg-white rounded-xl border border-poke-line overflow-hidden">
-        <div class="px-6 py-4 border-b border-poke-line flex items-center justify-between">
-          <h3 class="font-bold text-lg">All Orders</h3>
-          <button onclick="clearAllOrders()" class="text-xs bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition font-semibold">
-            Clear All Orders
-          </button>
+      <div class="bg-white rounded-xl border border-zinc-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-zinc-200 flex items-center justify-between">
+          <h3 class="font-semibold text-sm text-zinc-500 uppercase tracking-wider">All Orders</h3>
+          <button onclick="clearAllOrders()" class="text-xs text-zinc-400 hover:text-red-600 transition-colors font-medium">Clear All</button>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
-            <thead class="bg-poke-gray border-b border-poke-line">
+            <thead class="bg-zinc-50/50">
               <tr>
-                <th class="text-left px-6 py-3 font-semibold text-gray-600">Order ID</th>
-                <th class="text-left px-6 py-3 font-semibold text-gray-600">Customer</th>
-                <th class="text-left px-6 py-3 font-semibold text-gray-600">Contact</th>
-                <th class="text-left px-6 py-3 font-semibold text-gray-600">Items</th>
-                <th class="text-left px-6 py-3 font-semibold text-gray-600">Total</th>
-                <th class="text-left px-6 py-3 font-semibold text-gray-600">Status</th>
-                <th class="text-left px-6 py-3 font-semibold text-gray-600">Date</th>
-                <th class="text-left px-6 py-3 font-semibold text-gray-600">Actions</th>
+                <th class="text-left px-6 py-3 font-semibold text-zinc-400 text-xs uppercase tracking-wider">Order ID</th>
+                <th class="text-left px-6 py-3 font-semibold text-zinc-400 text-xs uppercase tracking-wider">Customer</th>
+                <th class="text-left px-6 py-3 font-semibold text-zinc-400 text-xs uppercase tracking-wider">Contact</th>
+                <th class="text-left px-6 py-3 font-semibold text-zinc-400 text-xs uppercase tracking-wider">Items</th>
+                <th class="text-left px-6 py-3 font-semibold text-zinc-400 text-xs uppercase tracking-wider">Total</th>
+                <th class="text-left px-6 py-3 font-semibold text-zinc-400 text-xs uppercase tracking-wider">Status</th>
+                <th class="text-left px-6 py-3 font-semibold text-zinc-400 text-xs uppercase tracking-wider">Date</th>
+                <th class="text-left px-6 py-3 font-semibold text-zinc-400 text-xs uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody id="all-orders-table">
-              <tr><td colspan="8" class="text-center py-8 text-gray-400">No orders yet</td></tr>
+              <tr><td colspan="8" class="text-center py-10 text-zinc-300 text-sm">No orders yet</td></tr>
             </tbody>
           </table>
         </div>
@@ -178,32 +192,28 @@
     <!-- ========== CARDS TAB ========== -->
     <div id="content-cards" class="hidden">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-xl font-bold">Manage Cards</h2>
-        <button onclick="openModal()" class="px-5 py-2 bg-poke-red text-white text-sm font-semibold rounded-lg hover:bg-poke-darkred transition">
-          + Add Card
-        </button>
+        <h2 class="font-semibold text-lg tracking-tight">Cards</h2>
+        <button onclick="openModal()" class="px-4 py-2 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 transition-colors">+ Add Card</button>
       </div>
-      <div class="bg-white rounded-xl border border-poke-line overflow-hidden">
+      <div class="bg-white rounded-xl border border-zinc-200 overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
-            <thead class="bg-poke-gray border-b border-poke-line">
+            <thead class="bg-zinc-50/50">
               <tr>
-                <th class="text-left px-4 py-3 font-semibold text-gray-600">Image</th>
-                <th class="text-left px-4 py-3 font-semibold text-gray-600">Name</th>
-                <th class="text-left px-4 py-3 font-semibold text-gray-600">Category</th>
-                <th class="text-left px-4 py-3 font-semibold text-gray-600">Price</th>
-                <th class="text-left px-4 py-3 font-semibold text-gray-600">Qty</th>
-                <th class="text-left px-4 py-3 font-semibold text-gray-600">Status</th>
-                <th class="text-left px-4 py-3 font-semibold text-gray-600">Actions</th>
+                <th class="text-left px-4 py-3 font-semibold text-zinc-400 text-xs uppercase tracking-wider">Image</th>
+                <th class="text-left px-4 py-3 font-semibold text-zinc-400 text-xs uppercase tracking-wider">Name</th>
+                <th class="text-left px-4 py-3 font-semibold text-zinc-400 text-xs uppercase tracking-wider">Category</th>
+                <th class="text-left px-4 py-3 font-semibold text-zinc-400 text-xs uppercase tracking-wider">Price</th>
+                <th class="text-left px-4 py-3 font-semibold text-zinc-400 text-xs uppercase tracking-wider">Qty</th>
+                <th class="text-left px-4 py-3 font-semibold text-zinc-400 text-xs uppercase tracking-wider">Status</th>
+                <th class="text-left px-4 py-3 font-semibold text-zinc-400 text-xs uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody id="cards-table">
-            </tbody>
+            <tbody id="cards-table"></tbody>
           </table>
         </div>
-        <div id="empty-state" class="hidden py-12 text-center text-gray-400">
-          <p class="text-lg mb-2">No cards yet</p>
-          <p class="text-sm">Click "Add Card" to create one</p>
+        <div id="empty-state" class="hidden py-14 text-center text-zinc-300">
+          <p class="text-sm">No cards yet. Click "+ Add Card" to create one.</p>
         </div>
       </div>
     </div>
@@ -211,22 +221,17 @@
     <!-- ========== CATEGORIES TAB ========== -->
     <div id="content-categories" class="hidden">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Add Category -->
-        <div class="bg-white rounded-xl border border-poke-line p-6">
-          <h3 class="font-bold text-lg mb-4">Add Category</h3>
+        <div class="bg-white rounded-xl border border-zinc-200 p-6">
+          <h3 class="font-semibold text-sm text-zinc-500 uppercase tracking-wider mb-4">Add Category</h3>
           <div class="flex gap-2">
-            <input type="text" id="new-category" placeholder="New category name"
-                   class="flex-1 px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
-            <button onclick="addCategory()" class="px-5 py-2 bg-poke-red text-white text-sm font-semibold rounded-lg hover:bg-poke-darkred transition">
-              Add
-            </button>
+            <input type="text" id="new-category" placeholder="Category name"
+                   class="form-input flex-1 px-3 py-2 border border-zinc-200 rounded-lg text-sm bg-white">
+            <button onclick="addCategory()" class="px-4 py-2 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 transition-colors">Add</button>
           </div>
         </div>
-        <!-- Categories List -->
-        <div class="bg-white rounded-xl border border-poke-line p-6">
-          <h3 class="font-bold text-lg mb-4">All Categories</h3>
-          <div id="categories-list" class="space-y-2 max-h-96 overflow-y-auto">
-          </div>
+        <div class="bg-white rounded-xl border border-zinc-200 p-6">
+          <h3 class="font-semibold text-sm text-zinc-500 uppercase tracking-wider mb-4">Categories</h3>
+          <div id="categories-list" class="space-y-1.5 max-h-80 overflow-y-auto"></div>
         </div>
       </div>
     </div>
@@ -234,27 +239,28 @@
   </div>
 
   <!-- ========== CARD MODAL ========== -->
-  <div id="modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl w-full max-w-4xl shadow-2xl overflow-hidden">
-      <div class="flex items-center justify-between px-6 py-4 border-b border-poke-line">
-        <h3 id="modal-title" class="font-bold text-lg">Add Card</h3>
-        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+  <div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="absolute inset-0 bg-black/40" onclick="closeModal()"></div>
+    <div class="modal-content relative bg-white rounded-xl w-full max-w-4xl overflow-hidden border border-zinc-200">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-zinc-200">
+        <h3 id="modal-title" class="font-semibold tracking-tight">Add Card</h3>
+        <button onclick="closeModal()" class="text-zinc-400 hover:text-zinc-600 text-xl transition-colors">&times;</button>
       </div>
       <form id="card-form">
         <input type="hidden" id="card-id">
         <div class="grid md:grid-cols-2">
           <!-- Left: Image Upload -->
-          <div class="bg-poke-gray p-8 flex flex-col items-center justify-center min-h-[400px]">
-            <div id="drop-zone" class="w-full h-full border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-poke-red transition p-8">
+          <div class="bg-zinc-50 p-8 flex flex-col items-center justify-center min-h-[360px]">
+            <div id="drop-zone" class="w-full h-full border border-dashed border-zinc-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-zinc-400 transition p-8">
               <img id="card-image-preview" class="hidden w-full h-full object-contain rounded-lg">
               <div id="drop-placeholder" class="text-center">
-                <div class="w-16 h-16 mx-auto mb-4 border-2 border-gray-300 rounded-lg flex items-center justify-center">
-                  <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                <div class="w-12 h-12 mx-auto mb-3 border border-zinc-200 rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                   </svg>
                 </div>
-                <p class="text-sm font-medium text-gray-600 mb-1">Drag & Drop image here</p>
-                <p class="text-xs text-gray-400">or click to browse</p>
+                <p class="text-sm font-medium text-zinc-500">Drop image here</p>
+                <p class="text-xs text-zinc-400 mt-0.5">or click to browse</p>
               </div>
               <input type="file" id="card-image" accept="image/*" class="hidden">
             </div>
@@ -264,8 +270,8 @@
           <div class="p-8 flex flex-col justify-between">
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Grading</label>
-                <select id="card-grading" class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+                <label class="block text-xs font-medium text-zinc-500 mb-1.5">Grading</label>
+                <select id="card-grading" class="form-input w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm bg-white">
                   <option value="">None</option>
                   <option value="PSA 10">PSA 10</option>
                   <option value="PSA 9">PSA 9</option>
@@ -276,31 +282,29 @@
                 </select>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Card Name *</label>
+                <label class="block text-xs font-medium text-zinc-500 mb-1.5">Card Name *</label>
                 <input type="text" id="card-name" required placeholder="e.g. Charizard VMAX"
-                       class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+                       class="form-input w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm bg-white">
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs text-gray-500 mb-1">Category *</label>
-                  <select id="card-category" required class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
-                    <option value="">Select...</option>
-                  </select>
+                  <label class="block text-xs font-medium text-zinc-500 mb-1.5">Category *</label>
+                  <select id="card-category" required class="form-input w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm bg-white"></select>
                 </div>
                 <div>
-                  <label class="block text-xs text-gray-500 mb-1">Quantity</label>
-                  <input type="number" id="card-quantity" min="0" value="1" class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+                  <label class="block text-xs font-medium text-zinc-500 mb-1.5">Quantity</label>
+                  <input type="number" id="card-quantity" min="0" value="1" class="form-input w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm bg-white">
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Price *</label>
+                  <label class="block text-xs font-medium text-zinc-500 mb-1.5">Price *</label>
                   <input type="text" id="card-price" required placeholder="Rp 5.000.000"
-                         class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+                         class="form-input w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm bg-white">
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                  <select id="card-status" class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+                  <label class="block text-xs font-medium text-zinc-500 mb-1.5">Status</label>
+                  <select id="card-status" class="form-input w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm bg-white">
                     <option value="active">Active</option>
                     <option value="sold">Sold Out</option>
                     <option value="inactive">Inactive</option>
@@ -308,19 +312,19 @@
                 </div>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Set Name</label>
+                <label class="block text-xs font-medium text-zinc-500 mb-1.5">Set Name</label>
                 <input type="text" id="card-set" placeholder="e.g. Champion's Path"
-                       class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm">
+                       class="form-input w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm bg-white">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label class="block text-xs font-medium text-zinc-500 mb-1.5">Description</label>
                 <textarea id="card-description" rows="3" placeholder="Card description..."
-                          class="w-full px-3 py-2 border border-poke-line rounded-lg focus:border-poke-red focus:outline-none text-sm resize-none"></textarea>
+                          class="form-input w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm bg-white resize-none"></textarea>
               </div>
             </div>
             <div class="flex gap-3 mt-6">
-              <button type="button" onclick="closeModal()" class="flex-1 py-2.5 border border-poke-line text-gray-600 rounded-lg hover:bg-gray-50 transition text-sm">Cancel</button>
-              <button type="submit" id="card-submit-btn" class="flex-1 py-2.5 bg-poke-red text-white font-semibold rounded-lg hover:bg-poke-darkred transition text-sm">Save Card</button>
+              <button type="button" onclick="closeModal()" class="flex-1 py-2.5 border border-zinc-200 text-zinc-500 rounded-lg hover:bg-zinc-50 transition text-sm font-medium">Cancel</button>
+              <button type="submit" id="card-submit-btn" class="flex-1 py-2.5 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition text-sm font-medium">Save Card</button>
             </div>
           </div>
         </div>
@@ -339,21 +343,21 @@
       return div.innerHTML;
     }
 
-    // Toast notification
+    // Toast notification — border, no shadow, no colored left bar
     function showToast(message, type = 'info') {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
       const icons = {
-        success: `<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`,
-        error: `<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`,
-        info: `<svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`
+        success: `<svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`,
+        error: `<svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`,
+        info: `<svg class="w-4 h-4 text-zinc-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`
       };
-      const borderColors = { success: 'border-l-4 border-green-500', error: 'border-l-4 border-red-500', info: 'border-l-4 border-blue-500' };
-      toast.className = `toast-enter flex items-center gap-3 bg-white px-5 py-4 rounded-lg shadow-xl ${borderColors[type]} min-w-[300px] max-w-[400px]`;
-      toast.innerHTML = `${icons[type]}<span class="text-sm font-medium text-gray-800">${esc(message)}</span>`;
+      toast.className = `toast-enter flex items-center gap-2.5 bg-white px-4 py-3 rounded-lg border border-zinc-200 min-w-[280px] max-w-[380px]`;
+      toast.innerHTML = `${icons[type]}<span class="text-sm text-zinc-700">${esc(message)}</span>`;
       container.appendChild(toast);
       setTimeout(() => { toast.classList.remove('toast-enter'); toast.classList.add('toast-exit'); setTimeout(() => toast.remove(), 300); }, 2500);
     }
+
     let token = localStorage.getItem('campt_token');
     let cards = [];
     let orders = [];
@@ -375,16 +379,15 @@
 
     // Tab switching
     function switchTab(tab) {
-      document.querySelectorAll('[id^="tab-"]').forEach(t => t.classList.remove('nav-active'));
+      document.querySelectorAll('[id^="tab-"]').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('[id^="content-"]').forEach(c => c.classList.add('hidden'));
-      document.getElementById(`tab-${tab}`).classList.add('nav-active');
+      document.getElementById(`tab-${tab}`).classList.add('active');
       document.getElementById(`content-${tab}`).classList.remove('hidden');
     }
 
     // ========== DASHBOARD STATS ==========
     async function loadDashboard() {
       try {
-        // Load orders
         const ordersRes = await fetch(`${API_BASE}/api/admin/orders`, { headers: headers() });
         orders = await ordersRes.json();
 
@@ -392,7 +395,6 @@
         const today = now.toISOString().split('T')[0];
         const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-        // Calculate stats
         const todayOrders = orders.filter(o => o.created_at && o.created_at.startsWith(today));
         const monthOrders = orders.filter(o => o.created_at && o.created_at.startsWith(thisMonth));
 
@@ -404,13 +406,9 @@
         document.getElementById('stat-orders-today').textContent = todayOrders.length;
         document.getElementById('stat-orders-total').textContent = orders.length;
 
-        // Render recent orders
         renderRecentOrders(orders.slice(0, 5));
-
-        // Render charts
         renderRevenueChart(orders);
         renderStatusChart(orders);
-
       } catch (err) {
         console.error('Failed to load dashboard:', err);
       }
@@ -419,17 +417,17 @@
     function renderRecentOrders(ordersList) {
       const tbody = document.getElementById('recent-orders-table');
       if (ordersList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400">No orders yet</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-10 text-zinc-300 text-sm">No orders yet</td></tr>';
         return;
       }
       tbody.innerHTML = ordersList.map(o => `
-        <tr class="border-b border-poke-line hover:bg-poke-gray transition">
-          <td class="px-6 py-4 font-mono text-xs font-semibold">${esc(o.order_id)}</td>
-          <td class="px-6 py-4">${esc(o.customer_name)}</td>
-          <td class="px-6 py-4">${esc(o.items).length} item(s)</td>
-          <td class="px-6 py-4 font-semibold">Rp${(o.total || 0).toLocaleString()}</td>
-          <td class="px-6 py-4"><span class="status-${esc(o.status)} px-2 py-1 rounded-full text-xs font-semibold">${esc(o.status)}</span></td>
-          <td class="px-6 py-4 text-gray-500 text-xs">${new Date(o.created_at).toLocaleDateString('id-ID')}</td>
+        <tr class="border-t border-zinc-100 table-row-hover">
+          <td class="px-6 py-3.5 font-mono text-xs font-medium text-zinc-500">${esc(o.order_id)}</td>
+          <td class="px-6 py-3.5 text-sm">${esc(o.customer_name)}</td>
+          <td class="px-6 py-3.5 text-xs text-zinc-400">${esc(o.items).length} item(s)</td>
+          <td class="px-6 py-3.5 text-sm font-medium">Rp${(o.total || 0).toLocaleString()}</td>
+          <td class="px-6 py-3.5"><span class="text-xs"><span class="status-dot ${esc(o.status)}"></span>${esc(o.status)}</span></td>
+          <td class="px-6 py-3.5 text-xs text-zinc-400">${new Date(o.created_at).toLocaleDateString('id-ID')}</td>
         </tr>
       `).join('');
     }
@@ -444,7 +442,6 @@
         const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
         const monthName = d.toLocaleDateString('id-ID', { month: 'short', year: '2-digit' });
         months.push(monthName);
-
         const monthRevenue = ordersList
           .filter(o => o.created_at && o.created_at.startsWith(monthKey))
           .reduce((sum, o) => sum + (o.total || 0), 0);
@@ -457,18 +454,19 @@
         data: {
           labels: months,
           datasets: [{
-            label: 'Revenue (Rp)',
             data: revenues,
-            backgroundColor: '#CC0000',
-            borderRadius: 6
+            backgroundColor: '#18181b',
+            borderRadius: 4,
+            barPercentage: 0.55
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
+          plugins: { legend: { display: false }, tooltip: { backgroundColor: '#18181b', titleFont: { size: 11 }, bodyFont: { size: 11 }, padding: 8, cornerRadius: 6, callbacks: { label: ctx => 'Rp ' + ctx.parsed.y.toLocaleString() } } },
           scales: {
-            y: { beginAtZero: true, ticks: { callback: v => 'Rp' + (v/1000000).toFixed(0) + 'jt' } }
+            x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#a1a1aa' } },
+            y: { beginAtZero: true, grid: { color: '#f4f4f5' }, ticks: { font: { size: 11 }, color: '#a1a1aa', callback: v => v >= 1000000 ? (v/1000000) + 'jt' : (v/1000) + 'k' }, border: { display: false } }
           }
         }
       });
@@ -477,19 +475,23 @@
     function renderStatusChart(ordersList) {
       const statuses = ['pending', 'processing', 'completed', 'cancelled'];
       const counts = statuses.map(s => ordersList.filter(o => o.status === s).length);
-      const colors = ['#ca8a04', '#2563eb', '#16a34a', '#dc2626'];
+      const mutedColors = ['#fbbf24', '#60a5fa', '#34d399', '#f87171'];
 
       if (statusChart) statusChart.destroy();
       statusChart = new Chart(document.getElementById('status-chart'), {
         type: 'doughnut',
         data: {
           labels: statuses.map(s => s.charAt(0).toUpperCase() + s.slice(1)),
-          datasets: [{ data: counts, backgroundColor: colors }]
+          datasets: [{ data: counts, backgroundColor: mutedColors, borderWidth: 0, spacing: 2 }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { position: 'bottom' } }
+          cutout: '65%',
+          plugins: {
+            legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyleWidth: 8, font: { size: 11 }, color: '#71717a' } },
+            tooltip: { backgroundColor: '#18181b', titleFont: { size: 11 }, bodyFont: { size: 11 }, padding: 8, cornerRadius: 6 }
+          }
         }
       });
     }
@@ -508,28 +510,23 @@
     function renderAllOrders() {
       const tbody = document.getElementById('all-orders-table');
       if (orders.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-gray-400">No orders yet</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-10 text-zinc-300 text-sm">No orders yet</td></tr>';
         return;
       }
       tbody.innerHTML = orders.map(o => `
-        <tr class="border-b border-poke-line hover:bg-poke-gray transition">
-          <td class="px-6 py-4 font-mono text-xs font-semibold">${esc(o.order_id)}</td>
-          <td class="px-6 py-4 font-medium">${esc(o.customer_name)}</td>
-          <td class="px-6 py-4 text-xs">
-            <div>${esc(o.customer_email)}</div>
-            <div class="text-gray-500">${esc(o.customer_phone)}</div>
-          </td>
-          <td class="px-6 py-4 text-xs">${o.items.map(i => esc(i.name)).join(', ')}</td>
-          <td class="px-6 py-4 font-semibold">Rp${(o.total || 0).toLocaleString()}</td>
-          <td class="px-6 py-4">
-            <span class="status-${esc(o.status)} px-2 py-1 rounded-full text-xs font-semibold">${esc(o.status)}</span>
-          </td>
-          <td class="px-6 py-4 text-gray-500 text-xs">${new Date(o.created_at).toLocaleDateString('id-ID')}</td>
-          <td class="px-6 py-4">
+        <tr class="border-t border-zinc-100 table-row-hover">
+          <td class="px-6 py-3.5 font-mono text-xs font-medium text-zinc-500">${esc(o.order_id)}</td>
+          <td class="px-6 py-3.5 text-sm font-medium">${esc(o.customer_name)}</td>
+          <td class="px-6 py-3.5 text-xs text-zinc-400"><div>${esc(o.customer_email)}</div><div class="mt-0.5">${esc(o.customer_phone)}</div></td>
+          <td class="px-6 py-3.5 text-xs text-zinc-500">${o.items.map(i => esc(i.name)).join(', ')}</td>
+          <td class="px-6 py-3.5 text-sm font-medium">Rp${(o.total || 0).toLocaleString()}</td>
+          <td class="px-6 py-3.5"><span class="text-xs"><span class="status-dot ${esc(o.status)}"></span>${esc(o.status)}</span></td>
+          <td class="px-6 py-3.5 text-xs text-zinc-400">${new Date(o.created_at).toLocaleDateString('id-ID')}</td>
+          <td class="px-6 py-3.5">
             <div class="flex gap-2">
-              ${o.status === 'pending' ? `<button onclick="confirmPayment(${o.id})" class="text-xs bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition">Confirm</button>` : ''}
-              <button onclick="viewOrderDetails(${o.id})" class="text-xs text-poke-red hover:underline">Details</button>
-              <button onclick="deleteOrder(${o.id})" class="text-xs text-red-500 hover:text-red-700 hover:underline">Delete</button>
+              ${o.status === 'pending' ? `<button onclick="confirmPayment(${o.id})" class="text-xs text-emerald-600 hover:text-emerald-700 font-medium">Confirm</button>` : ''}
+              <button onclick="viewOrderDetails(${o.id})" class="text-xs text-zinc-400 hover:text-zinc-600">Details</button>
+              <button onclick="deleteOrder(${o.id})" class="text-xs text-zinc-400 hover:text-red-500">Delete</button>
             </div>
           </td>
         </tr>
@@ -546,10 +543,7 @@
     async function deleteOrder(orderId) {
       if (!confirm('Delete this order?')) return;
       try {
-        await fetch(`${API_BASE}/api/admin/orders/${orderId}`, {
-          method: 'DELETE',
-          headers: headers()
-        });
+        await fetch(`${API_BASE}/api/admin/orders/${orderId}`, { method: 'DELETE', headers: headers() });
         showToast('Order deleted', 'success');
         loadOrders();
         loadDashboard();
@@ -560,12 +554,9 @@
 
     async function clearAllOrders() {
       if (!confirm('DELETE ALL ORDERS? This cannot be undone!')) return;
-      if (!confirm('Are you really sure? All order history will be gone.')) return;
+      if (!confirm('Are you really sure?')) return;
       try {
-        await fetch(`${API_BASE}/api/admin/orders`, {
-          method: 'DELETE',
-          headers: headers()
-        });
+        await fetch(`${API_BASE}/api/admin/orders`, { method: 'DELETE', headers: headers() });
         showToast('All orders cleared', 'success');
         loadOrders();
         loadDashboard();
@@ -577,8 +568,7 @@
     async function updateOrderStatus(orderId, status) {
       try {
         await fetch(`${API_BASE}/api/admin/orders/${orderId}/status`, {
-          method: 'PUT',
-          headers: { ...headers(), 'Content-Type': 'application/json' },
+          method: 'PUT', headers: { ...headers(), 'Content-Type': 'application/json' },
           body: JSON.stringify({ status })
         });
         loadDashboard();
@@ -590,30 +580,28 @@
     function viewOrderDetails(orderId) {
       const o = orders.find(o => o.id === orderId);
       if (!o) return;
-      const detailsHtml = `
-        <div class="space-y-2">
-          <p><strong>Order:</strong> ${esc(o.order_id)}</p>
-          <p><strong>Customer:</strong> ${esc(o.customer_name)}</p>
-          <p><strong>Email:</strong> ${esc(o.customer_email)}</p>
-          <p><strong>Phone:</strong> ${esc(o.customer_phone)}</p>
-          <p><strong>Address:</strong> ${esc(o.address)}, ${esc(o.city)}, ${esc(o.province)} ${esc(o.postal_code)}</p>
-          <p><strong>Items:</strong> ${o.items.map(i => esc(i.name)).join(', ')}</p>
-          <p><strong>Total:</strong> Rp${o.total.toLocaleString()}</p>
-          <p><strong>Payment:</strong> BCA Transfer</p>
-          <p><strong>Status:</strong> ${esc(o.status)}</p>
-        </div>
-      `;
-      // Create a temporary modal to show details
       const modal = document.createElement('div');
-      modal.className = 'fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4';
+      modal.className = 'fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4';
       modal.innerHTML = `
-        <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
+        <div class="bg-white rounded-xl max-w-md w-full p-6 border border-zinc-200">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="font-bold text-lg">Order Details</h3>
-            <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+            <h3 class="font-semibold tracking-tight">Order Details</h3>
+            <button onclick="this.closest('.fixed').remove()" class="text-zinc-400 hover:text-zinc-600 text-xl">&times;</button>
           </div>
-          ${detailsHtml}
-          <button onclick="this.closest('.fixed').remove()" class="mt-4 w-full py-2 bg-poke-red text-white rounded-lg hover:bg-poke-darkred transition text-sm">Close</button>
+          <div class="space-y-2 text-sm">
+            <p class="flex justify-between"><span class="text-zinc-400">Order</span><span class="font-mono text-zinc-600">${esc(o.order_id)}</span></p>
+            <p class="flex justify-between"><span class="text-zinc-400">Customer</span><span>${esc(o.customer_name)}</span></p>
+            <p class="flex justify-between"><span class="text-zinc-400">Email</span><span class="text-zinc-500">${esc(o.customer_email)}</span></p>
+            <p class="flex justify-between"><span class="text-zinc-400">Phone</span><span class="text-zinc-500">${esc(o.customer_phone)}</span></p>
+            <p class="mt-3 text-zinc-400 text-xs uppercase tracking-wider font-semibold">Address</p>
+            <p class="text-zinc-600">${esc(o.address)}, ${esc(o.city)}, ${esc(o.province)} ${esc(o.postal_code)}</p>
+            <p class="mt-3 text-zinc-400 text-xs uppercase tracking-wider font-semibold">Items</p>
+            <p class="text-zinc-600">${o.items.map(i => esc(i.name)).join(', ')}</p>
+            <p class="flex justify-between mt-3 pt-3 border-t border-zinc-100"><span class="text-zinc-400">Total</span><span class="font-semibold">Rp${(o.total || 0).toLocaleString()}</span></p>
+            <p class="flex justify-between"><span class="text-zinc-400">Payment</span><span class="text-zinc-500">BCA Transfer</span></p>
+            <p class="flex justify-between"><span class="text-zinc-400">Status</span><span class="text-xs"><span class="status-dot ${esc(o.status)}"></span>${esc(o.status)}</span></p>
+          </div>
+          <button onclick="this.closest('.fixed').remove()" class="mt-5 w-full py-2.5 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition text-sm font-medium">Close</button>
         </div>
       `;
       document.body.appendChild(modal);
@@ -625,36 +613,26 @@
         const res = await fetch(`${API_BASE}/api/cards?all=true`, { headers: headers() });
         cards = await res.json();
         renderCards();
-      } catch (err) {
-        console.error('Failed to load cards:', err);
-      }
+      } catch (err) { console.error('Failed to load cards:', err); }
     }
 
     function renderCards() {
       const tbody = document.getElementById('cards-table');
       const empty = document.getElementById('empty-state');
-
-      if (cards.length === 0) {
-        tbody.innerHTML = '';
-        empty.classList.remove('hidden');
-        return;
-      }
+      if (cards.length === 0) { tbody.innerHTML = ''; empty.classList.remove('hidden'); return; }
       empty.classList.add('hidden');
-
       tbody.innerHTML = cards.map(c => `
-        <tr class="border-b border-poke-line hover:bg-poke-gray transition">
-          <td class="px-4 py-3">
-            ${c.image_url ? `<img src="${esc(c.image_url)}" class="w-12 h-12 object-cover rounded-lg">` : '<div class="w-12 h-12 bg-poke-gray rounded-lg flex items-center justify-center text-lg">🃏</div>'}
-          </td>
-          <td class="px-4 py-3 font-medium">${esc(c.name)}</td>
-          <td class="px-4 py-3 text-gray-500 text-xs">${esc(c.category)}</td>
-          <td class="px-4 py-3 font-semibold text-sm">${esc(c.price)}</td>
-          <td class="px-4 py-3 text-center">${c.quantity || 1}</td>
-          <td class="px-4 py-3"><span class="status-${c.status === 'active' ? 'completed' : c.status === 'sold' ? 'cancelled' : 'pending'} px-2 py-1 rounded-full text-xs font-semibold">${esc(c.status)}</span></td>
-          <td class="px-4 py-3">
-            <div class="flex gap-2">
-              <button onclick="editCard(${c.id})" class="text-xs text-blue-600 hover:underline">Edit</button>
-              <button onclick="deleteCard(${c.id})" class="text-xs text-red-600 hover:underline">Delete</button>
+        <tr class="border-t border-zinc-100 table-row-hover">
+          <td class="px-4 py-2.5">${c.image_url ? `<img src="${esc(c.image_url)}" class="w-10 h-10 object-cover rounded-lg">` : '<div class="w-10 h-10 bg-zinc-100 rounded-lg flex items-center justify-center text-zinc-300"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke-width="1.5"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><path d="M21 15l-5-5L5 21" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'}</td>
+          <td class="px-4 py-2.5 text-sm font-medium">${esc(c.name)}</td>
+          <td class="px-4 py-2.5 text-xs text-zinc-400">${esc(c.category)}</td>
+          <td class="px-4 py-2.5 text-sm font-medium">${esc(c.price)}</td>
+          <td class="px-4 py-2.5 text-center text-sm text-zinc-400">${c.quantity || 1}</td>
+          <td class="px-4 py-2.5"><span class="text-xs"><span class="status-dot ${c.status === 'active' ? 'active' : c.status === 'sold' ? 'sold' : 'inactive'}"></span>${esc(c.status)}</span></td>
+          <td class="px-4 py-2.5">
+            <div class="flex gap-3">
+              <button onclick="editCard(${c.id})" class="text-xs text-zinc-400 hover:text-zinc-700">Edit</button>
+              <button onclick="deleteCard(${c.id})" class="text-xs text-zinc-400 hover:text-red-500">Delete</button>
             </div>
           </td>
         </tr>
@@ -668,7 +646,6 @@
       document.getElementById('drop-placeholder').classList.remove('hidden');
       document.getElementById('modal-title').textContent = card ? 'Edit Card' : 'Add Card';
       document.getElementById('card-submit-btn').textContent = card ? 'Update Card' : 'Save Card';
-
       if (card) {
         document.getElementById('card-id').value = card.id;
         document.getElementById('card-name').value = card.name;
@@ -685,28 +662,18 @@
           document.getElementById('drop-placeholder').classList.add('hidden');
         }
       }
-
       document.getElementById('modal').classList.remove('hidden');
     }
 
-    function closeModal() {
-      document.getElementById('modal').classList.add('hidden');
-    }
-
-    function editCard(id) {
-      const card = cards.find(c => c.id === id);
-      if (card) openModal(card);
-    }
+    function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+    function editCard(id) { const card = cards.find(c => c.id === id); if (card) openModal(card); }
 
     async function deleteCard(id) {
       if (!confirm('Delete this card?')) return;
       try {
         await fetch(`${API_BASE}/api/admin/cards/${id}`, { method: 'DELETE', headers: headers() });
-        loadCards();
-        loadDashboard();
-      } catch (err) {
-        showToast('Error: ' + err.message, 'error');
-      }
+        loadCards(); loadDashboard();
+      } catch (err) { showToast('Error: ' + err.message, 'error'); }
     }
 
     // Card form submit
@@ -722,22 +689,14 @@
       formData.append('grading', document.getElementById('card-grading').value);
       formData.append('quantity', document.getElementById('card-quantity').value);
       formData.append('description', document.getElementById('card-description').value);
-
       const imageFile = document.getElementById('card-image').files[0];
       if (imageFile) formData.append('image', imageFile);
-
       try {
         const url = id ? `${API_BASE}/api/admin/cards/${id}` : `${API_BASE}/api/admin/cards`;
         const method = id ? 'PUT' : 'POST';
         const res = await fetch(url, { method, headers: headers(), body: formData });
-        if (res.ok) {
-          closeModal();
-          loadCards();
-          loadDashboard();
-        } else {
-          const err = await res.json();
-          showToast(err.error || 'Failed to save card', 'error');
-        }
+        if (res.ok) { closeModal(); loadCards(); loadDashboard(); }
+        else { const err = await res.json(); showToast(err.error || 'Failed to save card', 'error'); }
       } catch (err) { showToast('Error: ' + err.message, 'error'); }
     });
 
@@ -746,13 +705,11 @@
     const fileInput = document.getElementById('card-image');
     const preview = document.getElementById('card-image-preview');
     const placeholder = document.getElementById('drop-placeholder');
-
     dropZone.addEventListener('click', () => fileInput.click());
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-poke-red', 'bg-white/50'); });
-    dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('border-poke-red', 'bg-white/50'); });
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-zinc-400', 'bg-zinc-100/50'); });
+    dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('border-zinc-400', 'bg-zinc-100/50'); });
     dropZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      dropZone.classList.remove('border-poke-red', 'bg-white/50');
+      e.preventDefault(); dropZone.classList.remove('border-zinc-400', 'bg-zinc-100/50');
       const file = e.dataTransfer.files[0];
       if (file && file.type.startsWith('image/')) { fileInput.files = e.dataTransfer.files; showPreview(file); }
     });
@@ -768,23 +725,17 @@
       try {
         const res = await fetch(`${API_BASE}/api/categories?all=true`, { headers: headers() });
         categories = await res.json();
-        renderCategories();
-        updateCategorySelect();
-      } catch (err) {
-        console.error('Failed to load categories:', err);
-      }
+        renderCategories(); updateCategorySelect();
+      } catch (err) { console.error('Failed to load categories:', err); }
     }
 
     function renderCategories() {
       const list = document.getElementById('categories-list');
-      if (categories.length === 0) {
-        list.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">No categories yet</p>';
-        return;
-      }
+      if (categories.length === 0) { list.innerHTML = '<p class="text-zinc-300 text-sm text-center py-4">No categories yet</p>'; return; }
       list.innerHTML = categories.map(cat => `
-        <div class="flex items-center justify-between p-3 bg-poke-gray rounded-lg">
-          <span class="text-sm font-medium">${esc(cat.name)}</span>
-          <button onclick="deleteCategory(${cat.id})" class="text-gray-400 hover:text-red-500 text-xs">Delete</button>
+        <div class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-zinc-50 transition">
+          <span class="text-sm text-zinc-700">${esc(cat.name)}</span>
+          <button onclick="deleteCategory(${cat.id})" class="text-zinc-300 hover:text-red-500 text-xs transition-colors">Delete</button>
         </div>
       `).join('');
     }
@@ -792,8 +743,7 @@
     function updateCategorySelect() {
       const select = document.getElementById('card-category');
       const currentVal = select.value;
-      select.innerHTML = '<option value="">Select...</option>' +
-        categories.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
+      select.innerHTML = '<option value="">Select...</option>' + categories.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
       if (currentVal) select.value = currentVal;
     }
 
@@ -803,9 +753,7 @@
       if (!name) return;
       try {
         const res = await fetch(`${API_BASE}/api/admin/categories`, {
-          method: 'POST',
-          headers: { ...headers(), 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name })
+          method: 'POST', headers: { ...headers(), 'Content-Type': 'application/json' }, body: JSON.stringify({ name })
         });
         if (res.ok) { input.value = ''; loadCategories(); }
         else { const err = await res.json(); showToast(err.error || 'Failed', 'error'); }
@@ -814,10 +762,8 @@
 
     async function deleteCategory(id) {
       if (!confirm('Delete this category?')) return;
-      try {
-        await fetch(`${API_BASE}/api/admin/categories/${id}`, { method: 'DELETE', headers: headers() });
-        loadCategories();
-      } catch (err) { showToast('Error: ' + err.message, 'error'); }
+      try { await fetch(`${API_BASE}/api/admin/categories/${id}`, { method: 'DELETE', headers: headers() }); loadCategories(); }
+      catch (err) { showToast('Error: ' + err.message, 'error'); }
     }
 
     // ========== INIT ==========
