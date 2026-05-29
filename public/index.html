@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Campt's Collection - Premium Vault</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
           colors: {
-            poke: { red: '#CC0000', darkred: '#9E0000', white: '#FFFFFF', black: '#1a1a1a', gray: '#f5f5f5', line: '#e0e0e0' }
+            poke: { red: '#CC0000', darkred: '#9E0000', black: '#1a1a1a', gray: '#f5f5f5', line: '#e0e0e0' }
           }
         }
       }
@@ -51,15 +51,13 @@
       background: #fff; border: 3px solid #1a1a1a;
       transform: translate(-50%, -50%);
     }
-    .card-hover:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-color: #d0d0d0; }
-    
-    .card-enter { animation: cardFadeIn 0.4s ease-out both; }
-    @keyframes cardFadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-    .toast-enter { animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-    .toast-exit { animation: slideOut 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-    @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
-    .page-btn { transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1); }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.08); border-color: #d0d0d0; }
+    .card-enter { animation: cardFadeIn 0.5s ease-out both; }
+    @keyframes cardFadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    .pokeball-bg { opacity: 0.12; animation: pulseBall 4s ease-in-out infinite; }
+    @keyframes pulseBall { 0%, 100% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.05); } }
+    .page-btn { transition: all 0.15s; }
     html { scroll-behavior: smooth; }
   </style>
 </head>
@@ -180,19 +178,20 @@
 
   <!-- Gallery -->
   <section id="gallery" class="max-w-7xl mx-auto px-6 py-24 text-center relative">
-    <!-- Subtle Pokéball background decoration -->
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] opacity-[0.04] pointer-events-none select-none">
+    <!-- Pokéball background decoration -->
+    <div class="pokeball-bg absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none select-none">
       <svg viewBox="0 0 100 100" class="w-full h-full text-poke-red">
-        <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="3"/>
-        <path d="M 4 50 L 96 50" stroke="currentColor" stroke-width="3"/>
-        <circle cx="50" cy="50" r="16" fill="currentColor" opacity="0.6"/>
+        <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M 4 50 L 96 50" stroke="currentColor" stroke-width="2"/>
+        <circle cx="50" cy="50" r="16" fill="currentColor" opacity="0.5"/>
         <circle cx="50" cy="50" r="8" fill="white"/>
       </svg>
     </div>
     
-    <h2 class="text-4xl md:text-5xl font-bold mb-14 relative z-10 tracking-tight">The Gallery</h2>
+    <h2 class="text-4xl md:text-5xl font-extrabold mb-4 relative z-10 tracking-tight">The Gallery</h2>
+    <p class="text-gray-500 text-sm mb-14 relative z-10 font-medium tracking-wide uppercase">Premium Pokémon TCG Collection</p>
 
-    <!-- Cards Grid - max 4 cards -->
+    <!-- Cards Grid -->
     <div id="cards-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
       <!-- Cards loaded dynamically from API -->
     </div>
@@ -207,10 +206,10 @@
     </div>
 
     <!-- View More -->
-    <div class="flex justify-end mt-8">
-      <a href="/vault.html" class="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-poke-red transition">
-        View more
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+    <div class="flex justify-center mt-12 relative z-10">
+      <a href="/vault.html" class="inline-flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-poke-red transition uppercase tracking-widest group">
+        View the full vault
+        <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
       </a>
     </div>
   </section>
@@ -565,26 +564,26 @@
     function renderCardGrid(cards) {
       const grid = document.getElementById('cards-grid');
       grid.innerHTML = cards.map((card, i) => `
-        <div class="card-hover bg-white rounded-lg overflow-hidden border border-[#e8e8e8] transition-all duration-300 card-enter" style="animation-delay: ${i * 30}ms">
-          <div class="aspect-[3/4] bg-[#f5f5f5] relative overflow-hidden group">
+        <div class="card-hover bg-white rounded-2xl overflow-hidden border border-gray-200 transition-all duration-300 card-enter" style="animation-delay: ${i * 40}ms">
+          <div class="aspect-[3/4] bg-gray-100 relative overflow-hidden group">
             ${card.image_url
-              ? `<img src="${esc(card.image_url)}" alt="${esc(card.name)}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]">`
-              : `<div class="w-full h-full flex items-center justify-center">${getCardPlaceholder()}</div>`
+              ? `<img src="${esc(card.image_url)}" alt="${esc(card.name)}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.08]">`
+              : `<div class="w-full h-full flex items-center justify-center text-gray-300">${getCardPlaceholder()}</div>`
             }
-            ${card.grading ? `<div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded text-[11px] font-semibold text-gray-800 tracking-wide">${esc(card.grading)}</div>` : ''}
-            ${card.status === 'sold' ? `<div class="absolute inset-0 bg-black/40 flex items-center justify-center"><span class="bg-white px-5 py-2 text-sm font-semibold tracking-wider uppercase">Sold</span></div>` : ''}
+            ${card.status === 'sold' ? `<div class="absolute inset-0 bg-black/50 flex items-center justify-center backdrop-blur-[2px]"><span class="bg-white text-black px-4 py-1.5 text-xs font-bold tracking-widest uppercase rounded-full">Sold Out</span></div>` : ''}
+            ${card.grading ? `<div class="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-bold text-gray-800 tracking-wide uppercase border border-gray-100">${esc(card.grading)}</div>` : ''}
           </div>
           <div class="p-4">
             <div class="flex items-center gap-2 mb-2">
-              <span class="text-[11px] font-medium text-gray-400 uppercase tracking-widest">${esc(card.category)}</span>
-              <span class="text-[11px] text-gray-300">·</span>
-              <span class="text-[11px] font-medium text-gray-400">${esc(card.origin || 'JP')}</span>
+              <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">${esc(card.category)}</span>
+              <span class="text-[10px] text-gray-300">·</span>
+              <span class="text-[10px] font-bold text-gray-400">${esc(card.origin || 'JP')}</span>
             </div>
-            <h3 class="font-semibold text-sm text-gray-900 mb-1 truncate">${esc(card.name)}</h3>
-            <p class="text-sm font-medium text-gray-600 mb-3">${esc(card.price)}</p>
+            <h3 class="font-bold text-sm text-gray-900 mb-1 leading-tight line-clamp-2">${esc(card.name)}</h3>
+            <p class="text-sm font-semibold text-poke-red mb-4">${esc(card.price)}</p>
             ${card.status === 'sold'
-              ? ''
-              : `<button data-card-id="${card.id}" class="view-details-btn w-full py-2.5 bg-[#111] text-white text-xs font-semibold rounded-md hover:bg-[#333] transition-colors duration-200 tracking-wide uppercase">View Details</button>`
+              ? `<button disabled class="w-full py-2.5 bg-gray-100 text-gray-400 text-xs font-bold rounded-lg cursor-not-allowed uppercase tracking-wide">Sold Out</button>`
+              : `<button data-card-id="${card.id}" class="view-details-btn w-full py-2.5 bg-[#111] text-white text-xs font-bold rounded-lg hover:bg-poke-red transition-colors duration-200 uppercase tracking-wide">View Details</button>`
             }
           </div>
         </div>
