@@ -437,7 +437,7 @@
       const revenues = [];
       const now = new Date();
 
-      for (let i = 5; i >= 0; i--) {
+      for (let i = 11; i >= 0; i--) {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
         const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
         const monthName = d.toLocaleDateString('id-ID', { month: 'short', year: '2-digit' });
