@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Campt's Collection - Premium Vault</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fredoka+One&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -175,13 +175,18 @@
   <div class="border-t border-poke-line"></div>
 
   <!-- Gallery -->
-  <section id="gallery" class="relative">
-    <!-- Subtle dot pattern background -->
-    <div class="absolute inset-0 bg-[radial-gradient(circle,#e5e5e5_1px,transparent_1px)] bg-[length:20px_20px] opacity-60 pointer-events-none"></div>
+  <section id="gallery" class="relative overflow-hidden">
+    <!-- Pokémon Pocket Style Background -->
+    <div class="absolute inset-0 bg-gradient-to-br from-[#eef4ff] via-white to-[#e0ebff] pointer-events-none"></div>
+    <!-- Diagonal Lines -->
+    <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: repeating-linear-gradient(45deg, #3b4cca 0, #3b4cca 1px, transparent 0, transparent 50%); background-size: 20px 20px;"></div>
     
     <div class="max-w-7xl mx-auto px-6 py-24 relative z-10">
       <div class="text-center">
-        <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-3">The Gallery</h2>
+        <!-- Pokémon Style Title -->
+        <h2 class="text-5xl md:text-6xl mb-4" style="font-family: 'Fredoka One', cursive; color: #3B4CCA; -webkit-text-stroke: 2px #FFD700; text-shadow: 3px 3px 0 #3B4CCA, -1px -1px 0 #3B4CCA, 1px -1px 0 #3B4CCA, -1px 1px 0 #3B4CCA, 1px 1px 0 #3B4CCA; letter-spacing: 2px; transform: rotate(-2deg);">
+          The Gallery
+        </h2>
         
         <!-- Elegant divider line with dot -->
         <div class="flex items-center justify-center gap-3 mb-6">
